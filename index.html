@@ -167,6 +167,7 @@
                                 <li><a href="#servicios" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Infraestructura</a></li>
                                 <li><a href="#seguridad" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Seguridad</a></li>
                                 <li><a href="#nosotros" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Nosotros</a></li>
+                                <li><a href="#contacto" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Contacto</a></li>
                             </ul>
                         </div>
                     </div>
@@ -527,6 +528,104 @@
             );
         };
 
+        const ContactForm = () => {
+            const [form, setForm] = React.useState({ nombre: '', empresa: '', correo: '', numero: '' });
+            const [sent, setSent] = React.useState(false);
+
+            const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const subject = encodeURIComponent(`Contacto desde tycdigital.cl – ${form.nombre} (${form.empresa})`);
+                const body = encodeURIComponent(
+                    `Nombre: ${form.nombre}\nEmpresa: ${form.empresa}\nCorreo: ${form.correo}\nTeléfono: ${form.numero}\n\n---\nMensaje enviado desde el formulario de contacto en www.tycdigital.cl`
+                );
+                window.location.href = `mailto:contacto@tycdigital.cl?subject=${subject}&body=${body}`;
+                setSent(true);
+                setTimeout(() => setSent(false), 5000);
+            };
+
+            const inputClass = "w-full bg-dark-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm";
+
+            return (
+                <section id="contacto" className="py-24">
+                    <div className="max-w-2xl mx-auto px-4 sm:px-6">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4">¿Hablamos?</h2>
+                            <p className="text-gray-400">Completa el formulario y te contactamos a la brevedad.</p>
+                        </div>
+                        <div className="glass-card rounded-2xl p-8 border border-gray-800">
+                            {sent && (
+                                <div className="mb-6 flex items-center gap-3 bg-green-900/30 border border-green-500/40 text-green-400 rounded-lg px-4 py-3 text-sm">
+                                    <Icons.Check />
+                                    <span>¡Tu cliente de correo se abrió con los datos listos! Revisa el borrador y envíalo.</span>
+                                </div>
+                            )}
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+                                        <input
+                                            type="text"
+                                            name="nombre"
+                                            required
+                                            placeholder="Tu nombre"
+                                            value={form.nombre}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Empresa *</label>
+                                        <input
+                                            type="text"
+                                            name="empresa"
+                                            required
+                                            placeholder="Nombre de tu empresa"
+                                            value={form.empresa}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Correo *</label>
+                                        <input
+                                            type="email"
+                                            name="correo"
+                                            required
+                                            placeholder="tu@empresa.cl"
+                                            value={form.correo}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Teléfono</label>
+                                        <input
+                                            type="tel"
+                                            name="numero"
+                                            placeholder="+56 9 XXXX XXXX"
+                                            value={form.numero}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                                >
+                                    Enviar mensaje <Icons.ArrowRight />
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
         const WhatsAppButton = () => (
             <a
                 href="https://wa.me/56900000000?text=Hola%2C%20me%20interesa%20una%20asesor%C3%ADa%20Azure"
@@ -551,6 +650,7 @@
                         <AboutUs />
                         <Comparison />
                         <CTA />
+                        <ContactForm />
                     </main>
                     <Footer />
                     <WhatsAppButton />
