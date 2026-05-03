@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Márgenes — Municipalidad de Las Condes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --blue: #0078d4;
+    --blue-dark: #005a9e;
+    --blue-light: #e6f2fb;
+    --green: #107c10;
+    --green-light: #dff6dd;
+    --red: #d13438;
+    --red-light: #fde7e9;
+    --orange: #d83b01;
+    --orange-light: #fff4ce;
+    --gray-1: #f8f9fa;
+    --gray-2: #e9ecef;
+    --gray-3: #dee2e6;
+    --gray-4: #adb5bd;
+    --gray-5: #6c757d;
+    --gray-6: #343a40;
+    --white: #ffffff;
+    --shadow: 0 2px 8px rgba(0,0,0,0.10);
+    --radius: 8px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: #f0f4f8; color: var(--gray-6); font-size: 14px; }
+
+  /* ── HEADER ───────────────────────────────────────── */
+  .app-header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+    color: white; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;
+  }
+  .app-header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .app-header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .header-metrics { display: flex; gap: 20px; }
+  .hm { text-align: right; }
+  .hm-label { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; }
+  .hm-value { font-size: 18px; font-weight: 700; }
+  .hm-value.green { color: #6ddb6d; }
+  .hm-value.red { color: #ff8a80; }
+  .hm-value.orange { color: #ffcc80; }
+
+  /* ── TABS ─────────────────────────────────────────── */
+  .tabs-nav {
+    background: white; border-bottom: 2px solid var(--gray-3);
+    display: flex; gap: 0; padding: 0 16px; overflow-x: auto;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    padding: 12px 18px; border: none; background: none;
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    color: var(--gray-5); cursor: pointer; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; transition: all 0.15s; white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--blue); background: var(--blue-light); }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+
+  /* ── CONTENT ──────────────────────────────────────── */
+  .tab-content { display: none; padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  /* ── CARDS ────────────────────────────────────────── */
+  .card {
+    background: white; border-radius: var(--radius); box-shadow: var(--shadow);
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--gray-2);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--gray-1);
+  }
+  .card-header h2 { font-size: 14px; font-weight: 600; color: var(--gray-6); }
+  .card-header p { font-size: 12px; color: var(--gray-5); margin-top: 2px; }
+  .card-body { padding: 16px 18px; }
+
+  /* ── TABLES ───────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--gray-1); padding: 9px 12px; text-align: left;
+    font-weight: 600; color: var(--gray-5); border-bottom: 2px solid var(--gray-3);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  thead th.right { text-align: right; }
+  thead th.center { text-align: center; }
+  tbody tr:hover { background: var(--blue-light); }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--gray-2); vertical-align: middle; }
+  tbody td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody td.center { text-align: center; }
+  tbody tr.total-row td {
+    background: var(--gray-6); color: white; font-weight: 700;
+    font-size: 13px; border-bottom: none;
+  }
+  tbody tr.subtotal-row td {
+    background: var(--blue-light); color: var(--blue-dark); font-weight: 600;
+  }
+
+  /* ── INPUTS ───────────────────────────────────────── */
+  input[type="number"], input[type="text"] {
+    border: 1px solid var(--gray-3); border-radius: 5px;
+    padding: 5px 8px; font-size: 13px; font-family: var(--font);
+    width: 100%; text-align: right; background: white;
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus, input[type="text"]:focus {
+    outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(0,120,212,0.15);
+  }
+  input.small { width: 80px; }
+  input.medium { width: 110px; }
+  input.large { width: 140px; }
+
+  .toggle-switch {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;
+  }
+  .toggle-switch input { width: auto; }
+
+  /* ── BADGES & PILLS ───────────────────────────────── */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-orange { background: var(--orange-light); color: var(--orange); }
+  .badge-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .badge-gray { background: var(--gray-2); color: var(--gray-5); }
+
+  /* ── MARGIN BAR ───────────────────────────────────── */
+  .margin-bar {
+    height: 6px; background: var(--gray-2); border-radius: 3px;
+    overflow: hidden; min-width: 60px;
+  }
+  .margin-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .margin-high .margin-bar-fill { background: var(--green); }
+  .margin-mid .margin-bar-fill { background: #f7a700; }
+  .margin-low .margin-bar-fill { background: var(--red); }
+
+  /* ── WEIGHT BAR ───────────────────────────────────── */
+  .weight-bar-container { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 4px 0; }
+  .weight-bar-segment { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: white; transition: width 0.3s; overflow: hidden; cursor: default; position: relative; }
+  .weight-bar-segment:hover::after {
+    content: attr(data-tooltip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px;
+    white-space: nowrap; font-size: 11px; pointer-events: none; z-index: 10;
+  }
+
+  /* ── SUMMARY CARDS ────────────────────────────────── */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .summary-card {
+    background: white; border-radius: var(--radius); padding: 16px 18px;
+    box-shadow: var(--shadow); border-left: 4px solid var(--blue);
+  }
+  .summary-card.green { border-left-color: var(--green); }
+  .summary-card.red { border-left-color: var(--red); }
+  .summary-card.orange { border-left-color: var(--orange); }
+  .summary-card .sc-label { font-size: 11px; color: var(--gray-5); text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-card .sc-value { font-size: 22px; font-weight: 700; color: var(--gray-6); margin: 4px 0 2px; }
+  .summary-card .sc-sub { font-size: 12px; color: var(--gray-4); }
+
+  /* ── ALERT ────────────────────────────────────────── */
+  .alert {
+    padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .alert-warning { background: var(--orange-light); color: var(--orange); border: 1px solid #f7ca7a; }
+  .alert-info { background: var(--blue-light); color: var(--blue-dark); border: 1px solid #b3d9f7; }
+  .alert-success { background: var(--green-light); color: var(--green); border: 1px solid #9ddb9d; }
+
+  /* ── GRID HELPERS ─────────────────────────────────── */
+  .row { display: flex; gap: 16px; }
+  .col { flex: 1; }
+  .col-auto { flex: 0 0 auto; }
+
+  /* ── SECTION TITLE ────────────────────────────────── */
+  .section-title { font-size: 15px; font-weight: 700; color: var(--gray-6); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--blue); display: inline-block; }
+
+  /* ── BUTTONS ──────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 5px; border: none;
+    font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-outline { background: white; color: var(--blue); border: 1px solid var(--blue); }
+  .btn-outline:hover { background: var(--blue-light); }
+
+  /* ── RANGE INPUT ──────────────────────────────────── */
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--gray-3); outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--blue); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+  /* ── IMPONDERABLES ────────────────────────────────── */
+  .imp-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--gray-2); }
+  .imp-row:last-child { border-bottom: none; }
+  .imp-name { flex: 1; font-weight: 500; }
+  .imp-desc { font-size: 11px; color: var(--gray-5); }
+  .imp-impact { min-width: 140px; text-align: right; font-weight: 600; color: var(--red); font-size: 14px; }
+
+  /* ── LICENSE RANGE ────────────────────────────────── */
+  .lic-tier { background: var(--gray-1); border: 1px solid var(--gray-3); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  .lic-tier h4 { font-size: 12px; font-weight: 600; color: var(--gray-5); margin-bottom: 8px; text-transform: uppercase; }
+
+  /* ── CHART WRAPPER ────────────────────────────────── */
+  .chart-wrap { position: relative; height: 260px; }
+
+  /* ── RESPONSIVE ───────────────────────────────────── */
+  @media (max-width: 768px) {
+    .header-metrics { display: none; }
+    .row { flex-direction: column; }
+    .tab-btn { padding: 10px 12px; font-size: 12px; }
+  }
+
+  /* ── ITEM EXPANDER ────────────────────────────────── */
+  .item-row { cursor: pointer; user-select: none; }
+  .item-row td:first-child::before { content: '▶ '; font-size: 10px; color: var(--gray-4); }
+  .item-row.expanded td:first-child::before { content: '▼ '; color: var(--blue); }
+  .item-detail-row { background: #fafcff; }
+  .item-detail-row td { padding: 0; }
+  .item-detail-inner { padding: 12px 16px; border-top: 1px dashed var(--gray-3); }
+  .item-detail-inner table thead th { background: #edf4fb; font-size: 11px; padding: 7px 10px; }
+  .item-detail-inner table tbody tr:hover { background: #e3f0fb; }
+  .item-detail-inner table tbody td { padding: 6px 10px; }
+  .item-detail-inner table tbody tr.total-row td { background: var(--blue); font-size: 12px; }
+
+  /* ── COLORS PER ITEM ──────────────────────────────── */
+  .color-0 { background: #0078d4; } .color-1 { background: #2b7a3c; }
+  .color-2 { background: #8764b8; } .color-3 { background: #d83b01; }
+  .color-4 { background: #107c6e; } .color-5 { background: #986f0b; }
+  .color-6 { background: #c43e1c; } .color-7 { background: #4a5e8a; }
+
+  .warn-pct { color: var(--red); font-weight: 700; }
+  .ok-pct { color: var(--green); font-weight: 700; }
+
+  /* ── scrollable table wrapper ─── */
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ HEADER ════════════════════════ -->
+<div class="app-header">
+  <div>
+    <h1>⚖️ Calculadora de Márgenes · Municipalidad de Las Condes</h1>
+    <p>Consultoría CRM · Microsoft Dynamics 365 + Power Platform · W-it SpA</p>
+  </div>
+  <div class="header-metrics">
+    <div class="hm">
+      <div class="hm-label">Total Venta</div>
+      <div class="hm-value" id="hdr-total">$0</div>
+    </div>
+    <div class="hm">
+      <div class="hm-label">Margen Bruto</div>
+      <div class="hm-value green" id="hdr-margin">0%</div>
+    </div>
+    <div class="hm">
+      <div class="hm-label">Margen Neto</div>
+      <div class="hm-value orange" id="hdr-net">0%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ TABS NAV ════════════════════════ -->
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="showTab('resumen')">📊 Resumen</button>
+  <button class="tab-btn" onclick="showTab('perfiles')">👤 Perfiles y Tarifas</button>
+  <button class="tab-btn" onclick="showTab('items')">📋 Ítems y Horas</button>
+  <button class="tab-btn" onclick="showTab('equalizador')">⚖️ Equalizador</button>
+  <button class="tab-btn" onclick="showTab('licencias')">💿 Licenciamiento</button>
+  <button class="tab-btn" onclick="showTab('imponderables')">⚠️ Imponderables</button>
+  <button class="tab-btn" onclick="showTab('gantt')">📅 Plan de Implementación</button>
+</div>
+
+<!-- ════════════════ GLOBAL CONFIG BAR ════════════════ -->
+<div style="background:#fff;border-bottom:1px solid var(--gray-3);padding:8px 24px;display:flex;align-items:center;gap:28px;font-size:13px;flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-weight:600;color:var(--gray-5);font-size:11px;text-transform:uppercase;letter-spacing:.4px;">📋 UTM</span>
+    <span style="color:var(--gray-5)">1 UTM =</span>
+    <input type="number" id="utm-rate" value="68000" min="1"
+      style="width:90px;padding:4px 8px;border:1px solid var(--gray-3);border-radius:5px;font-size:13px;font-weight:700;text-align:right;"
+      oninput="S.utmRate=Number(this.value);updateMunicipalityBudget();recalcAll()">
+    <span style="color:var(--gray-5)">CLP</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-weight:600;color:var(--gray-5);font-size:11px;text-transform:uppercase;letter-spacing:.4px;">🇨🇱 UF</span>
+    <span style="color:var(--gray-5)">1 UF =</span>
+    <input type="number" id="uf-rate" value="40000" min="1"
+      style="width:100px;padding:4px 8px;border:1px solid var(--gray-3);border-radius:5px;font-size:13px;font-weight:700;text-align:right;"
+      oninput="S.ufRate=Number(this.value);syncUfLinkedProfiles();recalcAll()">
+    <span style="color:var(--gray-5)">CLP</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-weight:600;color:var(--gray-5);font-size:11px;text-transform:uppercase;letter-spacing:.4px;">💵 USD</span>
+    <span style="color:var(--gray-5)">1 USD =</span>
+    <input type="number" id="exchange-rate-global" value="950" min="1"
+      style="width:90px;padding:4px 8px;border:1px solid var(--gray-3);border-radius:5px;font-size:13px;font-weight:700;text-align:right;"
+      oninput="syncExchangeRate(this.value)">
+    <span style="color:var(--gray-5)">CLP</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-weight:600;color:#8764b8;font-size:11px;text-transform:uppercase;letter-spacing:.4px;">🧾 IVA</span>
+    <input type="number" id="iva-rate" value="19" min="0" max="100"
+      style="width:60px;padding:4px 8px;border:1px solid #c9b3e8;border-radius:5px;font-size:13px;font-weight:700;text-align:right;color:#8764b8;"
+      oninput="S.ivaRate=Number(this.value);recalcAll()">
+    <span style="color:#8764b8">%</span>
+    <span id="iva-info" style="color:var(--gray-5);font-size:11px;">aplicado al precio venta</span>
+  </div>
+  <div id="global-uf-info" style="color:var(--gray-5);font-size:12px;"></div>
+</div>
+
+<!-- ════════════════ TAB: RESUMEN ════════════════ -->
+<div id="tab-resumen" class="tab-content active">
+  <div class="summary-grid" id="summary-grid"></div>
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header"><div><h2>Margen por Ítem de Consultoría</h2><p>Precio venta en CLP y UF (sin IVA — la consultoría no lleva IVA)</p></div></div>
+        <div class="card-body">
+          <div class="table-scroll">
+            <table id="resumen-items-table">
+              <thead>
+                <tr>
+                  <th>Ítem</th>
+                  <th class="right">Costo CLP</th>
+                  <th class="right">Precio Venta CLP</th>
+                  <th class="right" style="background:#e8f4e8;color:#2b7a3c">Precio Venta UF</th>
+                  <th class="right">Margen $</th>
+                  <th class="right">Margen %</th>
+                  <th>Indicador</th>
+                  <th class="right">Peso %</th>
+                </tr>
+              </thead>
+              <tbody id="resumen-items-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="max-width:380px">
+      <div class="card">
+        <div class="card-header"><div><h2>Distribución del Proyecto</h2></div></div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>Cuenta de Resultados — P&amp;L Consolidado</h2>
+        <p>Consultoría (base + opcional) + Licenciamiento − Imponderables</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 12px;
+          background:#fff8e8;border:1px solid #f7ca7a;border-radius:6px;font-size:12px;font-weight:600;color:var(--orange)">
+          <input type="checkbox" id="toggle-optional" checked
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--orange)"
+            onchange="S.includeOptional=this.checked;recalcAll()">
+          Incluir Pool Evolutivo (Ítem 6 — Sprints)
+        </label>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Escenario comparativo rápido -->
+      <div id="pnl-scenario-bar" style="display:flex;flex-direction:column;gap:0;margin-bottom:14px;padding:12px;background:#f8f9fa;border-radius:6px;border:1px solid var(--gray-3);"></div>
+      <div class="table-scroll">
+        <table id="pnl-table">
+          <thead><tr><th>Concepto</th><th class="right">Costo</th><th class="right">Precio al Cliente</th><th class="right" style="background:#e8f4e8;color:#2b7a3c">UF</th><th class="right">Margen $</th><th class="right">Margen %</th></tr></thead>
+          <tbody id="pnl-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TAB: PERFILES ════════════════ -->
+<div id="tab-perfiles" class="tab-content">
+  <div class="card">
+    <div class="card-header">
+      <div><h2>Perfiles de Consultoría — Tarifas base</h2><p>Ingresa costo y precio en CLP o UF — ambos campos están sincronizados. El margen se calcula automáticamente.</p></div>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-info">💡 Puedes ingresar las tarifas en <strong>CLP o UF por hora</strong>. Al modificar un campo el otro se actualiza solo. La consultoría <strong>no lleva IVA</strong>; el IVA aplica solo al licenciamiento.</div>
+      <div class="table-scroll">
+        <table id="profiles-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="vertical-align:middle">Perfil</th>
+              <th colspan="2" class="center" style="background:#f0f4f8;border-bottom:1px solid var(--gray-3)">Costo / hora</th>
+              <th colspan="2" class="center" style="background:#e8f4e8;color:#2b7a3c;border-bottom:1px solid #b2d9b2">Precio Venta / hora</th>
+              <th rowspan="2" class="right" style="vertical-align:middle">Margen $</th>
+              <th rowspan="2" class="right" style="vertical-align:middle">Margen %</th>
+              <th rowspan="2" style="vertical-align:middle">Indicador</th>
+            </tr>
+            <tr>
+              <th class="right" style="background:#f0f4f8;font-size:10px">CLP/hr</th>
+              <th class="right" style="background:#f0f4f8;font-size:10px;color:var(--gray-5)">UF/hr</th>
+              <th class="right" style="background:#e8f4e8;color:#2b7a3c;font-size:10px">CLP/hr</th>
+              <th class="right" style="background:#e8f4e8;color:#2b7a3c;font-size:10px">UF/hr</th>
+            </tr>
+          </thead>
+          <tbody id="profiles-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TAB: ÍTEMS ════════════════ -->
+<div id="tab-items" class="tab-content">
+  <div class="alert alert-info">💡 Haz clic en cada ítem para expandir e ingresar las horas por perfil. Los totales se calculan en CLP y UF automáticamente usando las tarifas definidas en "Perfiles y Tarifas".</div>
+  <div class="card">
+    <div class="card-header">
+      <div><h2>Ítems del Proyecto — Horas por Perfil</h2><p>Basado en Anexo 3 de las bases de licitación</p></div>
+    </div>
+    <div class="card-body table-scroll">
+      <table id="items-table">
+        <thead>
+          <tr>
+            <th>Ítem</th>
+            <th class="center">Cant.</th>
+            <th class="right">Horas Total</th>
+            <th class="right">Costo CLP</th>
+            <th class="right">Precio Venta CLP</th>
+            <th class="right" style="background:#e8f4e8;color:#2b7a3c">Precio Venta UF</th>
+            <th class="right">Margen $</th>
+            <th class="right">Margen %</th>
+          </tr>
+        </thead>
+        <tbody id="items-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TAB: EQUALIZADOR ════════════════ -->
+<div id="tab-equalizador" class="tab-content">
+  <!-- ── PANEL RFP: solo referencia ── -->
+  <div style="background:#f0f4f8;border:1px solid #b0c4d8;border-radius:8px;padding:14px 18px;margin-bottom:16px;">
+
+    <!-- Cabecera con título + descuento -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#005a9e;text-transform:uppercase;letter-spacing:.5px;">
+          📋 Presupuesto RFP — Bases CRM Municipalidad de Las Condes (Cláusula A.1.2) — IVA incluido
+        </div>
+        <div style="font-size:10px;color:var(--gray-5);margin-top:2px;">Solo referencia. Los valores de oferta se calculan aplicando el descuento competitivo.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:#fff8e8;border:1px solid #f7ca7a;border-radius:6px;padding:8px 14px;">
+        <span style="font-size:12px;color:var(--orange);font-weight:700;">🎯 Descuento competitivo:</span>
+        <input type="number" id="competitive-discount"
+          style="width:62px;font-size:18px;font-weight:700;padding:4px 6px;border:2px solid var(--orange);border-radius:5px;text-align:right;color:var(--orange);background:white"
+          value="13" min="0" max="50" step="0.5" oninput="updateMunicipalityBudget()">
+        <span style="font-size:16px;font-weight:700;color:var(--orange)">%</span>
+        <span style="font-size:11px;color:var(--gray-5)">bajo el techo RFP</span>
+      </div>
+    </div>
+
+    <!-- Tarjetas -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;">
+
+      <!-- Contrato base -->
+      <div style="background:white;border:1px solid #b0c4d8;border-radius:6px;padding:12px 14px;flex:1;min-width:200px;">
+        <div style="font-size:10px;color:var(--blue);font-weight:700;margin-bottom:1px;">CONTRATO BASE — Cláusula A.1.2</div>
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:8px;">Ítems 1–5 · Ítem 7 (Soporte 48m) · Ítem 8 (400 usuarios 48m)</div>
+        <div style="font-size:22px;font-weight:700;color:var(--blue);line-height:1.1">41.834 UTM</div>
+        <div id="rfp-base-uf" style="font-size:13px;color:#2b7a3c;font-weight:600;margin-top:2px;"></div>
+        <div id="rfp-base-clp" style="font-size:11px;color:var(--gray-5);"></div>
+        <div style="border-top:1px dashed var(--orange);margin:8px 0;"></div>
+        <div style="font-size:10px;color:var(--orange);font-weight:700;margin-bottom:3px;">OFERTA W-IT (−<span class="dct-pct"></span>%)</div>
+        <div id="rfp-base-offer-utm" style="font-size:16px;font-weight:700;color:var(--orange);"></div>
+        <div id="rfp-base-offer-uf"  style="font-size:12px;color:var(--orange);font-weight:600;"></div>
+        <div id="rfp-base-offer-clp" style="font-size:11px;color:var(--gray-5);"></div>
+      </div>
+
+      <!-- Pool evolutivo -->
+      <div style="background:white;border:1px solid #c9b3e8;border-radius:6px;padding:12px 14px;flex:1;min-width:200px;">
+        <div style="font-size:10px;color:#8764b8;font-weight:700;margin-bottom:1px;">POOL EVOLUTIVO — Cláusula A.14.5</div>
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:8px;">Ítem 6 (25 sprints) + habilitación nuevos usuarios adicionales</div>
+        <div style="font-size:22px;font-weight:700;color:#8764b8;line-height:1.1">26.545 UTM</div>
+        <div id="rfp-sprints-uf" style="font-size:13px;color:#2b7a3c;font-weight:600;margin-top:2px;"></div>
+        <div id="rfp-sprints-clp" style="font-size:11px;color:var(--gray-5);"></div>
+        <div style="border-top:1px dashed var(--orange);margin:8px 0;"></div>
+        <div style="font-size:10px;color:var(--orange);font-weight:700;margin-bottom:3px;">OFERTA W-IT (−<span class="dct-pct"></span>%)</div>
+        <div id="rfp-spr-offer-utm"  style="font-size:16px;font-weight:700;color:var(--orange);"></div>
+        <div id="rfp-spr-offer-uf"   style="font-size:12px;color:var(--orange);font-weight:600;"></div>
+        <div id="rfp-spr-offer-clp"  style="font-size:11px;color:var(--gray-5);"></div>
+        <div style="font-size:10px;color:#8764b8;margin-top:6px;font-style:italic;">⚠️ Solo se paga por lo efectivamente utilizado</div>
+      </div>
+
+      <!-- Total contrato -->
+      <div style="background:#e8f4e8;border:2px solid #2b7a3c;border-radius:6px;padding:12px 14px;flex:1;min-width:180px;">
+        <div style="font-size:10px;color:#2b7a3c;font-weight:700;margin-bottom:1px;">TOTAL CONTRATO</div>
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:8px;">Base + Pool evolutivo</div>
+        <div style="font-size:22px;font-weight:700;color:#2b7a3c;line-height:1.1">68.379 UTM</div>
+        <div id="rfp-total-uf"  style="font-size:13px;color:#2b7a3c;font-weight:700;margin-top:2px;"></div>
+        <div id="rfp-total-clp" style="font-size:11px;color:var(--gray-5);"></div>
+        <div style="border-top:1px dashed var(--orange);margin:8px 0;"></div>
+        <div style="font-size:10px;color:var(--orange);font-weight:700;margin-bottom:3px;">OFERTA W-IT (−<span class="dct-pct"></span>%)</div>
+        <div id="rfp-total-offer-utm" style="font-size:16px;font-weight:700;color:var(--orange);"></div>
+        <div id="rfp-total-offer-uf"  style="font-size:13px;color:var(--orange);font-weight:700;"></div>
+        <div id="rfp-total-offer-clp" style="font-size:11px;color:var(--gray-5);"></div>
+      </div>
+    </div>
+
+    <!-- Pie de panel -->
+    <div style="font-size:10px;color:var(--gray-4);margin-top:10px;line-height:1.7">
+      📌 <strong>Ítem 7 (Soporte y Mesa de Ayuda)</strong> → Contrato Base (41.834 UTM) — pago mensual por 48 meses.&nbsp;&nbsp;
+      📌 <strong>Ítem 6 (25 sprints)</strong> + nuevos usuarios adicionales → Pool Evolutivo (26.545 UTM) — Cláusula A.14.5.<br>
+      Neto sin IVA → Base: <span id="rfp-base-net"></span> UTM · Pool: <span id="rfp-spr-net"></span> UTM · Total: <span id="rfp-total-net"></span> UTM
+    </div>
+  </div>
+
+  <!-- ── BLOQUE EQUALIZADOR: totales calculados + gap ── -->
+  <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+    <div>
+      <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">PRESUPUESTO MUNICIPALIDAD (UF)</label>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" id="municipality-budget-uf"
+          style="width:150px;font-size:16px;font-weight:700;padding:6px 10px;border:2px solid var(--blue);border-radius:6px;text-align:right"
+          value="0" oninput="updateMunicipalityBudget()">
+        <span style="color:var(--gray-5);font-size:14px">UF</span>
+      </div>
+      <div style="font-size:10px;color:var(--gray-4);margin-top:3px;">Ajusta si el valor difiere del RFP</div>
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">EQUIVALENTE CLP</label>
+      <div id="eq-muni-clp" style="font-size:16px;font-weight:700;color:var(--blue);padding:7px 12px;background:var(--blue-light);border-radius:5px;min-width:150px">$0</div>
+    </div>
+  <!-- Totales calculados y gap -->
+  <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+    <div>
+      <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">TOTAL CALCULADO CONSULTORÍA (UF)</label>
+      <div id="eq-calc-total-uf" style="font-size:16px;font-weight:700;color:#2b7a3c;padding:7px 12px;background:#dff6dd;border-radius:5px;">— UF</div>
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">TOTAL CALCULADO CONSULTORÍA (CLP)</label>
+      <div id="eq-calc-total" style="font-size:16px;font-weight:700;color:var(--blue);padding:7px 12px;background:var(--blue-light);border-radius:5px;">$0</div>
+    </div>
+    <div id="eq-gap-box" style="display:none;">
+      <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">GAP vs PRECIO OFERTA</label>
+      <div id="eq-gap" style="font-size:16px;font-weight:700;padding:7px 12px;border-radius:5px;"></div>
+    </div>
+  </div>
+  <!-- inputs ocultos para compatibilidad con funciones existentes -->
+  <input type="hidden" id="target-budget-uf" value="0">
+  <input type="hidden" id="target-budget" value="0">
+
+  <div class="card">
+    <div class="card-header"><div><h2>Distribución de Pesos — Consultoría</h2><p>Precio calculado vs precio oferta (presupuesto municipalidad menos descuento competitivo). El total debe sumar 100%.</p></div></div>
+    <div class="card-body">
+      <div class="weight-bar-container" id="weight-bar" style="margin-bottom:16px;"></div>
+      <div id="eq-weight-sum-alert"></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Ítem</th>
+              <th class="right">Precio CLP</th>
+              <th class="right" style="background:#e8f4e8;color:#2b7a3c">Precio UF</th>
+              <th class="right" style="width:90px">Peso %</th>
+              <th style="width:160px">Barra</th>
+              <th class="right" id="eq-col-target-clp">Oferta CLP</th>
+              <th class="right" style="background:#fff4ce;color:var(--orange)" id="eq-col-target-uf">Oferta UF</th>
+              <th class="right">Gap</th>
+            </tr>
+          </thead>
+          <tbody id="eq-body"></tbody>
+          <tfoot>
+            <tr style="background:var(--gray-1)">
+              <td style="font-weight:700">TOTAL</td>
+              <td class="right" id="eq-total-calc" style="font-weight:700"></td>
+              <td class="right" id="eq-total-calc-uf" style="font-weight:700;color:#2b7a3c"></td>
+              <td class="right" id="eq-total-pct" style="font-weight:700"></td>
+              <td></td>
+              <td class="right" id="eq-total-target" style="font-weight:700"></td>
+              <td class="right" id="eq-total-target-uf" style="font-weight:700;color:#2b7a3c"></td>
+              <td class="right" id="eq-total-gap" style="font-weight:700"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ TAB: LICENCIAS ════════════════ -->
+<div id="tab-licencias" class="tab-content">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header">
+          <div><h2>Licenciamiento Microsoft + Azure</h2><p>Precio de venta unitario (USD/mes) · Costo partner · Cantidad · Período. Los totales se calculan en CLP usando el tipo de cambio configurado.</p></div>
+        </div>
+        <div class="card-body" id="licenses-body" style="padding:12px"></div>
+      </div>
+    </div>
+    <div class="col" style="max-width:360px">
+      <div class="card">
+        <div class="card-header"><div><h2>Tipo de Cambio USD/CLP</h2></div></div>
+        <div class="card-body">
+          <label style="font-size:12px;color:var(--gray-5);display:block;margin-bottom:4px;">1 USD =</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="exchange-rate" style="width:120px;font-size:18px;font-weight:700;" value="950" oninput="syncExchangeRate(this.value)">
+            <span style="font-size:16px;color:var(--gray-5)">CLP</span>
+          </div>
+          <p style="font-size:11px;color:var(--gray-4);margin-top:8px;">Sincronizado con la barra global superior</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><h2>Resumen Licenciamiento</h2></div></div>
+        <div class="card-body" id="lic-summary"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TAB: IMPONDERABLES ════════════════ -->
+<div id="tab-imponderables" class="tab-content">
+  <div class="alert alert-warning">⚠️ Los imponderables reducen el margen neto final. Se calculan sobre la base indicada y se suman para obtener el impacto total.</div>
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header"><div><h2>Factores de Riesgo</h2><p>Configura el porcentaje de cada riesgo sobre su base de cálculo</p></div></div>
+        <div class="card-body" id="imp-body"></div>
+      </div>
+    </div>
+    <div class="col" style="max-width:380px">
+      <div class="card">
+        <div class="card-header"><div><h2>Impacto en el Margen</h2></div></div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartImp"></canvas></div>
+          <div id="imp-summary" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TAB: GANTT ════════════════ -->
+<div id="tab-gantt" class="tab-content">
+  <div id="gantt-container"></div>
+</div>
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════
+//   STATE
+// ═══════════════════════════════════════════════════
+const S = {
+  profiles: [
+    { id:'arch',  name:'Arquitecto de Solución',        costRate:34000, billRate:74000 },
+    { id:'pm',    name:'Jefe de Proyecto',               costRate:26000, billRate:66000 },
+    { id:'crm',   name:'Consultor CRM y Power Platform', costRate:26000, billRate:60000 },
+    { id:'func',  name:'Consultor Funcional',            costRate:26000, billRate:52000 },
+    { id:'int',   name:'Ingeniero de Integraciones',     costRate:26000, billRate:60000 },
+    { id:'biz',   name:'Analista de Negocios',           costRate:26000, billRate:60000 },
+    { id:'dev',   name:'Desarrollador',                  costRate:28000, billRate:52000 },
+    { id:'ux',    name:'Consultor / Diseñador UX·UI',    costRate:24000, billRate:52000 },
+    // Especialistas: tarifa fija CLP (1,5 UF costo · 2,5 UF venta al valor UF por defecto)
+    { id:'legal', name:'Asesor Cumplimiento Leyes y Normativos', costRate:60000, billRate:100000 },
+    { id:'sec',   name:'Experto en Seguridad',                   costRate:60000, billRate:100000 },
+    // On-Demand: tarifa UF-linked, solo aplica a Ítems 6 y 8 (Pool 26.545 UTM)
+    { id:'od', name:'Consultor On-Demand (Pool Evolutivo)', costRate:28000, billRate:48000,
+      ufCost:0.7, ufBill:1.2, ufLinked:true,
+      note:'Tarifa variable: 0,7 UF/hr costo · 1,2 UF/hr venta — se recalcula con el valor de la UF' },
+  ],
+  items: [
+    // ── CONTRATO BASE (41.834 UTM) ─────────────────────────────────────────
+    { id:'i7', name:'Soporte y Mesa de Ayuda',              fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'48 meses · 24/7 · SLA S1=15 min respuesta · revisiones trimestrales cumplimiento' },
+    { id:'i1', name:'Configuración Base CRM + Subsidios',   fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 1 · máx 40 días hábiles · Go-Live Big Bang 400 usuarios · Integraciones: ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway (maestros Vecinos/Func/Profesiones/Instituciones) · Migración ≥1 año calendario · Mod. N°1' },
+    { id:'i2', name:'Subvenciones (PYJ)',                   fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 2 · proceso de entrega de subvenciones · trazabilidad y auditoría · datos financieros beneficiarios · migración incluida' },
+    { id:'i3', name:'Permiso de Circulación (DTTP)',        fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 3 · integración MTT + CONASET (archivo F8) + aseguradoras AACH · ~130.000 pagos período · migración incluida' },
+    { id:'i4', name:'Atención Veterinaria Municipal',       fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 4 · certificados vacunas/microchip/recetas generados por CRM · exámenes médicos y psicométricos · ClaveÚnica · migración incluida' },
+    { id:'i5', name:'Talleres',                             fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 5 · MODIFICACIÓN N°1: renombrado de "Centros Deportivos SPA" a "Talleres" · inscripción centros comunitarios y juntas de vecinos · Tarjeta Vecino · migración incluida' },
+    { id:'i8', name:'Activación y mantención de Usuarios',  fase:'Contrato Base', presupuesto:'Base', qty:400, note:'SS.PP. + Lic. Microsoft + Azure · 400 usuarios base (130 Atención Público + 168 Gestión + 70 Seguimiento + 25 Visador + 7 Admin) · 48 meses · EntraID JIT sync' },
+    // ── POOL EVOLUTIVO (26.545 UTM) — On-Demand, A.14.5 ──────────────────
+    { id:'i6', name:'Sprints por Mantenimiento Evolutivo',  fase:'Pool Evolutivo', presupuesto:'Evolutivo', qty:25, note:'Pool 26.545 UTM — pago por sprint utilizado · A.14.5', optional:true },
+  ],
+  // hours[itemId][profileId] = hours  (defaults from Anexo 3 estimación)
+  // Horas por ítem / perfil  — i1 incrementado +50% respecto a estimación original
+  hours: {
+    //               arch  pm    crm   func  int   biz   dev   ux    legal  sec
+    // legal = Asesor Cumplimiento Leyes y Normativos (Ley 21.719, 21.663, 21.180)
+    // sec   = Experto en Seguridad (ciberseg., accesos, cifrado, pen-testing plan)
+    // ux    = Consultor / Diseñador UX·UI  (+30% sobre estimación anterior, redondeado)
+    i1: { arch:480, pm:640, crm:960, func:640, int:720, biz:400, dev:720, ux:200, legal:160, sec:200 },
+    //  Ítem 1 — BASE · Fase 1 máx 40 días hábiles · 9 integraciones requeridas en Fase 1
+    //  (ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE2, API Gateway+maestros)
+    //  int elevado: cada API requiere levantamiento, autenticación, pruebas y documentación.
+    i2: { arch:120, pm:200, crm:400, func:320, int:200, biz:200, dev:400, ux:120, legal:120, sec:120 },
+    //  Ítem 2 — Subvenciones PYJ: datos financieros y beneficiarios → trazabilidad auditada.
+    i3: { arch:200, pm:400, crm:800, func:640, int:640, biz:400, dev:880, ux:160, legal:80,  sec:120 },
+    //  Ítem 3 — Permiso Circulación: ~130.000 pagos/período · integración MTT, CONASET (F8),
+    //  aseguradoras AACH, ERP Proexsi (SOAP) · alto volumen y complejidad de integración.
+    i4: { arch:80,  pm:160, crm:320, func:260, int:120, biz:160, dev:320, ux:80,  legal:60,  sec:60  },
+    //  Ítem 4 — Veterinaria: certificados generados por CRM, exámenes, ClaveÚnica.
+    i5: { arch:80,  pm:160, crm:320, func:260, int:120, biz:160, dev:320, ux:80,  legal:60,  sec:60  },
+    //  Ítem 5 — Talleres (ex-Centros Deportivos SPA · Mod N°1): inscripción talleres
+    //  comunitarios, Tarjeta Vecino, gestión cupos. Menor integración que i3.
+    i7: { arch:240, pm:480, crm:2400,func:960, int:480, biz:480, dev:1920,ux:0,   legal:48,  sec:48  },
+    //  Ítem 7 — Soporte 48m · 24/7 · SLA 15 min · revisiones trimestrales cumplimiento.
+    i8: { arch:0,   pm:0,   crm:0,   func:0,   int:0,   biz:0,   dev:0,   ux:0,  legal:0,   sec:0,  od:400  },
+    i6: { arch:0,   pm:0,   crm:0,   func:0,   int:0,   biz:0,   dev:0,   ux:0,  legal:0,   sec:0,  od:31201 },
+  },
+  // Licensing items — group: 'microsoft' | 'azure'
+  licenses: [
+    // ── Microsoft Dynamics 365 + Power Platform ────────────────────────────
+    { id:'d365cs', group:'microsoft', name:'Dynamics 365 Customer Service Enterprise', sku:'CFQ7TTC0LFDZ:0001:P1Y', currency:'USD', costUnit:68.20, priceUnit:85.25,  units:240, period:48, active:true  },
+    { id:'d365tm', group:'microsoft', name:'Dynamics 365 Team Members',                sku:'CFQ7TTC0LFNJ:0001:P1Y', currency:'USD', costUnit:4.85,  priceUnit:6.06,   units:160, period:48, active:true  },
+    { id:'m365cp', group:'microsoft', name:'Microsoft 365 Copilot',                    sku:'CFQ7TTC0MM8R:0002:P1Y', currency:'USD', costUnit:23.62, priceUnit:29.53,  units:50,  period:48, active:true  },
+    { id:'dvdb',   group:'microsoft', name:'Dataverse Database Capacity add-on',       sku:'CFQ7TTC0LHRL:0002:P1Y', currency:'USD', costUnit:25.98, priceUnit:32.47,  units:25,  period:48, active:true  },
+    { id:'dvfile', group:'microsoft', name:'Dataverse File Capacity add-on',           sku:'CFQ7TTC0LHQ3:0001:P1Y', currency:'USD', costUnit:1.30,  priceUnit:1.63,   units:500, period:48, active:true  },
+    { id:'dvlog',  group:'microsoft', name:'Dataverse Log Capacity add-on',            sku:'CFQ7TTC0HBSL:0001:P1Y', currency:'USD', costUnit:6.50,  priceUnit:8.12,   units:25,  period:48, active:true  },
+    { id:'papps',  group:'microsoft', name:'Power Apps Premium',                       sku:'CFQ7TTC0LH2H:0002:P1Y', currency:'USD', costUnit:12.99, priceUnit:16.24,  units:50,  period:48, active:true  },
+    { id:'pautop', group:'microsoft', name:'Power Automate Premium',                   sku:'CFQ7TTC0LSGZ:0001:P1Y', currency:'USD', costUnit:9.74,  priceUnit:12.18,  units:10,  period:48, active:true  },
+    { id:'pbipro', group:'microsoft', name:'Power BI Pro',                             sku:'CFQ7TTC0LHSF:0001:P1Y', currency:'USD', costUnit:9.70,  priceUnit:12.12,  units:50,  period:48, active:true  },
+    { id:'pautpr', group:'microsoft', name:'Power Automate Process',                   sku:'CFQ7TTC0MFT9:0001:P1Y', currency:'USD', costUnit:103.92,priceUnit:129.90, units:5,   period:48, active:true  },
+    { id:'cpstud', group:'microsoft', name:'Microsoft Copilot Studio',                 sku:'CFQ7TTC0LH1F:000P:P1Y', currency:'USD', costUnit:155.88,priceUnit:194.85, units:5,   period:48, active:true  },
+    // ── Azure Services (3 ambientes: dev / test / prod) ────────────────────
+    { id:'az_sb',   group:'azure', name:'Azure Service Bus (Standard)',              sku:'', currency:'USD', costUnit:10,  priceUnit:10,  units:3, period:48, active:true, desc:'Mensajería entre sistemas'            },
+    { id:'az_fn',   group:'azure', name:'Azure Functions (consumo)',                 sku:'', currency:'USD', costUnit:30,  priceUnit:30,  units:3, period:48, active:true, desc:'Procesos batch e integraciones'       },
+    { id:'az_apim', group:'azure', name:'Azure API Management (Developer)',          sku:'', currency:'USD', costUnit:50,  priceUnit:50,  units:3, period:48, active:true, desc:'Exposición de APIs'                   },
+    { id:'az_ai',   group:'azure', name:'Application Insights / Log Analytics',     sku:'', currency:'USD', costUnit:80,  priceUnit:80,  units:3, period:48, active:true, desc:'Monitoreo y trazabilidad'             },
+    { id:'az_fd',   group:'azure', name:'Azure Front Door / WAF',                   sku:'', currency:'USD', costUnit:35,  priceUnit:35,  units:3, period:48, active:true, desc:'Seguridad perimetral'                 },
+    { id:'az_bk',   group:'azure', name:'Azure Backup + DR',                        sku:'', currency:'USD', costUnit:60,  priceUnit:60,  units:3, period:48, active:true, desc:'Respaldos y continuidad'              },
+    { id:'az_bw',   group:'azure', name:'Bandwidth / egress',                       sku:'', currency:'USD', costUnit:40,  priceUnit:40,  units:3, period:48, active:true, desc:'Transferencia de datos saliente'      },
+    { id:'az_res',  group:'azure', name:'Reserva por capacidad / sobreconsumo',     sku:'', currency:'USD', costUnit:100, priceUnit:100, units:3, period:48, active:true, desc:'Buffer 20% sobre dimensionamiento base'},
+  ],
+  exchangeRate: 950,
+  ufRate: 40000,
+  utmRate: 68000,   // CLP por UTM (actualizar mensualmente)
+  ivaRate: 19,
+  // Presupuesto RFP — Bases CRM visadas, Cláusula A.1.2
+  // BASE (41.834 UTM): Ítems 1–5 (implementación) + Ítem 7 (Soporte 48m) + Ítem 8 (400 usuarios 48m)
+  // POOL EVOLUTIVO (26.545 UTM): Ítem 6 (25 sprints mantenimiento) + habilitación nuevos usuarios adicionales (A.14.5)
+  rfp: {
+    baseUTM:    41834,  // Contrato base: ítems 1-5, 7, 8
+    sprintsUTM: 26545,  // Pool evolutivo: ítem 6 + nuevos usuarios adicionales
+    totalUTM:   68379,  // Total contrato IVA incluido
+    ivaIncluido: true
+  },
+  // Imponderables — category: 'imponderable' | 'otro'
+  //   type 'percent'  → base + rate (%)
+  //   type 'fixed_uf' → amount_uf (UF fijo)
+  //   type 'fixed_clp'→ amount_clp (CLP fijo)
+  imponderables: [
+    // ── IMPONDERABLES (riesgos contractuales si se cobran garantías) ──────────
+    { id:'gar1', category:'imponderable', type:'percent',
+      name:'Garantía de Fiel Cumplimiento del Contrato',
+      desc:'Cobro de la boleta de garantía por incumplimiento o resolución anticipada del contrato. Base: total neto del proyecto.',
+      base:'total', rate:5, enabled:true },
+    { id:'gar2', category:'imponderable', type:'percent',
+      name:'Garantía de Correcta Inversión de Anticipo',
+      desc:'Cobro de garantía de anticipo si se hubiera pactado. Aplica sobre el monto del anticipo (estimado como % del contrato).',
+      base:'total', rate:0, enabled:false },
+    { id:'mul',  category:'imponderable', type:'percent',
+      name:'Multas por Incumplimiento de Hitos',
+      desc:'Penalizaciones contractuales por atrasos en entregables o incumplimiento de hitos del proyecto.',
+      base:'consulting', rate:2, enabled:true },
+    { id:'sla',  category:'imponderable', type:'percent',
+      name:'Multas por Incumplimiento de SLA (Soporte)',
+      desc:'Penalizaciones por no cumplir los niveles de servicio comprometidos durante la fase de soporte y mantención.',
+      base:'consulting', rate:1, enabled:true },
+    { id:'hrs',  category:'imponderable', type:'percent',
+      name:'Horas Extra No Presupuestadas',
+      desc:'Esfuerzo adicional fuera del alcance original estimado (scope creep, cambios de requerimientos, reuniones extra).',
+      base:'consulting', rate:5, enabled:true },
+    { id:'con',  category:'imponderable', type:'percent',
+      name:'Contingencia General',
+      desc:'Reserva de riesgo global sobre el total del proyecto (consultoría + licencias).',
+      base:'total', rate:3, enabled:true },
+    // ── OTROS COSTOS ──────────────────────────────────────────────────────────
+    { id:'asr',  category:'otro', type:'fixed_uf',
+      name:'Asesor Relacionador',
+      desc:'Honorarios del asesor de relacionamiento con el cliente municipal. Monto fijo en UF.',
+      amount_uf:500, enabled:true },
+  ],
+  targetBudget: 0,
+  municipalityBudgetUF: 0,   // se inicializa desde el RFP en init()
+  competitiveDiscount: 13,
+  includeOptional: true,     // incluir ítems opcionales (sprints) en el P&L
+};
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+function clp(n) {
+  if (!n && n !== 0) return '$0';
+  return '$' + Math.round(n).toLocaleString('es-CL');
+}
+function getUfRate() {
+  return Number(document.getElementById('uf-rate')?.value) || S.ufRate || 40000;
+}
+function getUtmRate() {
+  return Number(document.getElementById('utm-rate')?.value) || S.utmRate || 68000;
+}
+function utmToCLP(utm) { return utm * getUtmRate(); }
+function utmToUF(utm)  { return utmToCLP(utm) / getUfRate(); }
+function getIvaRate() {
+  return Number(document.getElementById('iva-rate')?.value) ?? S.ivaRate ?? 19;
+}
+function gross(n) { return n * (1 + getIvaRate() / 100); }
+function clpGross(n) { return clp(gross(n)); }
+function ufGross(n) { return uf(gross(n)); }
+function uf(n) {
+  const rate = getUfRate();
+  if (!n || rate === 0) return '— UF';
+  const val = n / rate;
+  return val.toLocaleString('es-CL', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' UF';
+}
+function pct(n) {
+  if (!isFinite(n) || isNaN(n)) return '—';
+  return n.toFixed(1) + '%';
+}
+function marginClass(m) {
+  if (m >= 30) return 'margin-high';
+  if (m >= 15) return 'margin-mid';
+  return 'margin-low';
+}
+function badgeMargin(m) {
+  if (!isFinite(m) || isNaN(m)) return '<span class="badge badge-gray">—</span>';
+  if (m >= 30) return `<span class="badge badge-green">${pct(m)}</span>`;
+  if (m >= 15) return `<span class="badge badge-orange">${pct(m)}</span>`;
+  return `<span class="badge badge-red">${pct(m)}</span>`;
+}
+function getHours(itemId, profileId) {
+  return (S.hours[itemId] && S.hours[itemId][profileId]) ? Number(S.hours[itemId][profileId]) : 0;
+}
+function setHours(itemId, profileId, val) {
+  if (!S.hours[itemId]) S.hours[itemId] = {};
+  S.hours[itemId][profileId] = Number(val) || 0;
+}
+
+// ═══════════════════════════════════════════════════
+//  CALCULATIONS
+// ═══════════════════════════════════════════════════
+// ⚠️ Consultoría NO tiene IVA — solo licenciamiento lo lleva
+
+function sumItemGroup(itemFilter) {
+  let cost = 0, revenue = 0;
+  S.items.filter(itemFilter).forEach(it => {
+    const c = calcItemCosts(it.id);
+    cost += c.cost; revenue += c.revenue;
+  });
+  const margin$ = revenue - cost;
+  const marginPct = revenue > 0 ? (margin$ / revenue * 100) : 0;
+  return { cost, revenue, margin$, marginPct };
+}
+
+function calcConsultingBase()     { return sumItemGroup(it => !it.optional); }
+function calcConsultingOptional() { return sumItemGroup(it => !!it.optional); }
+
+function calcImponderableImpactOn(consultingRevenue, totalRevenue) {
+  let total = 0;
+  S.imponderables.forEach(imp => {
+    total += calcImpactAmount(imp, consultingRevenue, totalRevenue);
+  });
+  return total;
+}
+
+function calcItemCosts(itemId) {
+  let cost = 0, revenue = 0, totalHrs = 0;
+  S.profiles.forEach(p => {
+    const h = getHours(itemId, p.id);
+    cost += h * p.costRate;
+    revenue += h * p.billRate;
+    totalHrs += h;
+  });
+  const margin$ = revenue - cost;
+  const marginPct = revenue > 0 ? (margin$ / revenue * 100) : 0;
+  return { cost, revenue, margin$, marginPct, totalHrs };
+}
+
+function calcConsultingTotals() {
+  let cost = 0, revenue = 0;
+  S.items.forEach(it => {
+    const c = calcItemCosts(it.id);
+    cost += c.cost;
+    revenue += c.revenue;
+  });
+  const margin$ = revenue - cost;
+  const marginPct = revenue > 0 ? (margin$ / revenue * 100) : 0;
+  return { cost, revenue, margin$, marginPct };
+}
+
+// Raw: uso interno (tab Licencias, calcItemCosts i8)
+function calcLicenseTotalsRaw() {
+  // Usa S.exchangeRate (siempre sincronizado), no depende de qué pestaña está activa
+  const fx = S.exchangeRate || 950;
+  let cost = 0, revenue = 0;
+  S.licenses.forEach(lic => {
+    if (!lic.active) return;
+    const mult = lic.units * lic.period;
+    const c = lic.costUnit  * mult * (lic.currency === 'USD' ? fx : 1);
+    const r = lic.priceUnit * mult * (lic.currency === 'USD' ? fx : 1);
+    cost += c; revenue += r;
+  });
+  const margin$ = revenue - cost;
+  const marginPct = revenue > 0 ? (margin$ / revenue * 100) : 0;
+  return { cost, revenue, margin$, marginPct };
+}
+// calcLicenseTotals = alias de Raw
+function calcLicenseTotals() { return calcLicenseTotalsRaw(); }
+
+function calcImpactAmount(imp, ctRevenue, totalRevenue) {
+  if (!imp.enabled) return 0;
+  if (imp.type === 'percent') {
+    const base = imp.base === 'consulting' ? ctRevenue : totalRevenue;
+    return base * (imp.rate || 0) / 100;
+  }
+  if (imp.type === 'fixed_uf') {
+    return (imp.amount_uf || 0) * getUfRate();
+  }
+  if (imp.type === 'fixed_clp') {
+    return imp.amount_clp || 0;
+  }
+  return 0;
+}
+
+function calcImponderableImpact() {
+  const ct = calcConsultingTotals();
+  const lt = calcLicenseTotals();
+  const total = ct.revenue + lt.revenue;
+  return calcImponderableImpactOn(ct.revenue, total);
+}
+
+// ═══════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  recalcAll();
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: PROFILES
+// ═══════════════════════════════════════════════════
+function ufVal(clpAmount) {
+  // Returns UF value with 4 decimal places for inputs
+  const rate = getUfRate();
+  if (!rate) return 0;
+  return (clpAmount / rate).toFixed(4);
+}
+
+function renderProfiles() {
+  const tbody = document.getElementById('profiles-body');
+  tbody.innerHTML = '';
+  S.profiles.forEach(p => {
+    const margin$ = p.billRate - p.costRate;
+    const marginPct = p.billRate > 0 ? (margin$ / p.billRate * 100) : 0;
+    const mc = marginClass(marginPct);
+    const bar = `<div class="margin-bar ${mc}" style="width:80px"><div class="margin-bar-fill" style="width:${Math.min(marginPct,100)}%"></div></div>`;
+    const costUF  = ufVal(p.costRate);
+    const billUF  = ufVal(p.billRate);
+    const marginUF = ufVal(margin$);
+    const ufBadge = p.ufLinked
+      ? `<div style="margin-top:3px;font-size:10px;background:#8764b8;color:white;padding:1px 7px;border-radius:8px;display:inline-block;">
+           🔄 ${p.note || `${p.ufCost} UF/hr costo · ${p.ufBill} UF/hr venta`}
+         </div>`
+      : '';
+    tbody.innerHTML += `<tr id="prow-${p.id}"${p.ufLinked?" style='background:#faf5ff;border-left:3px solid #8764b8;'":""}>
+      <td><strong>${p.name}</strong>${ufBadge}</td>
+      <td class="right" style="background:#f8f9fa">
+        <input type="number" style="width:90px;text-align:right;border:1px solid var(--gray-3);border-radius:4px;padding:4px 6px;font-size:13px"
+          value="${p.costRate}" min="0" step="500"
+          oninput="updateProfileCLP('${p.id}','costRate',this.value,this)"
+          onblur="recalcAll()"
+          title="Costo por hora en CLP — Tab o clic fuera aplica el cambio">
+      </td>
+      <td class="right" style="background:#f8f9fa">
+        <input type="number" style="width:80px;text-align:right;border:1px solid #b8d4e8;border-radius:4px;padding:4px 6px;font-size:13px;color:var(--gray-5)"
+          value="${costUF}" min="0" step="0.001"
+          oninput="updateProfileUF('${p.id}','costRate',this.value,this)"
+          onblur="recalcAll()"
+          title="Costo por hora en UF — Tab o clic fuera aplica el cambio">
+      </td>
+      <td class="right" style="background:#f4fbf4">
+        <input type="number" style="width:90px;text-align:right;border:1px solid #b2d9b2;border-radius:4px;padding:4px 6px;font-size:13px;color:#2b7a3c;font-weight:600"
+          value="${p.billRate}" min="0" step="500"
+          oninput="updateProfileCLP('${p.id}','billRate',this.value,this)"
+          onblur="recalcAll()"
+          title="Precio de venta por hora en CLP — Tab o clic fuera aplica el cambio">
+      </td>
+      <td class="right" style="background:#f4fbf4">
+        <input type="number" style="width:80px;text-align:right;border:1px solid #88c988;border-radius:4px;padding:4px 6px;font-size:13px;color:#2b7a3c;font-weight:600"
+          value="${billUF}" min="0" step="0.001"
+          oninput="updateProfileUF('${p.id}','billRate',this.value,this)"
+          onblur="recalcAll()"
+          title="Precio de venta por hora en UF — Tab o clic fuera aplica el cambio">
+      </td>
+      <td class="right">${clp(margin$)}<br><span style="font-size:11px;color:#2b7a3c">${marginUF} UF</span></td>
+      <td class="right">${badgeMargin(marginPct)}</td>
+      <td>${bar}</td>
+    </tr>`;
+  });
+}
+
+// Actualiza SOLO las celdas de margen de la fila del perfil — sin tocar los inputs
+function refreshProfileRow(p) {
+  const row = document.getElementById('prow-' + p.id);
+  if (!row) return;
+  const margin$   = p.billRate - p.costRate;
+  const marginPct = p.billRate > 0 ? (margin$ / p.billRate * 100) : 0;
+  const mc  = marginClass(marginPct);
+  const bar = `<div class="margin-bar ${mc}" style="width:80px"><div class="margin-bar-fill" style="width:${Math.min(marginPct,100)}%"></div></div>`;
+  const marginUF = ufVal(margin$);
+  const cells = row.querySelectorAll('td');
+  // layout: [name][costCLP][costUF][billCLP][billUF][margen$][margen%][bar]
+  if (cells[5]) cells[5].innerHTML = `${clp(margin$)}<br><span style="font-size:11px;color:#2b7a3c">${marginUF} UF</span>`;
+  if (cells[6]) cells[6].innerHTML = badgeMargin(marginPct);
+  if (cells[7]) cells[7].innerHTML = bar;
+}
+
+// oninput: solo sincroniza el campo hermano CLP↔UF, sin recalcular (evita re-render mientras escribe)
+function updateProfileCLP(id, field, val, inputEl) {
+  const p = S.profiles.find(x => x.id === id);
+  if (!p) return;
+  p[field] = Number(val) || 0;
+  const row = inputEl.closest('tr');
+  const cells = row.querySelectorAll('td');
+  const ufCellIdx = field === 'costRate' ? 2 : 4;
+  const ufInput = cells[ufCellIdx]?.querySelector('input');
+  if (ufInput) ufInput.value = ufVal(p[field]);
+  // No llama recalcAll — eso ocurre en onblur del mismo input
+}
+
+function updateProfileUF(id, field, ufValStr, inputEl) {
+  const p = S.profiles.find(x => x.id === id);
+  if (!p) return;
+  const rate = getUfRate();
+  p[field] = Math.round((Number(ufValStr) || 0) * rate);
+  const row = inputEl.closest('tr');
+  const cells = row.querySelectorAll('td');
+  const clpCellIdx = field === 'costRate' ? 1 : 3;
+  const clpInput = cells[clpCellIdx]?.querySelector('input');
+  if (clpInput) clpInput.value = p[field];
+  // No llama recalcAll — eso ocurre en onblur del mismo input
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: ITEMS TABLE (with expandable rows)
+// ═══════════════════════════════════════════════════
+// Phase config for styling
+const FASE_CONFIG = {
+  'Contrato Base':  { color:'#0078d4', bg:'#e6f2fb', label:'CONTRATO BASE — Ítems 7, 1, 2, 3, 4, 5' },
+  'Pool Evolutivo': { color:'#8764b8', bg:'#f5f0ff', label:'POOL EVOLUTIVO — Ítems 8 y 6' },
+  // Mantener entradas legacy por compatibilidad con datos guardados
+  'Fase 1':    { color:'#0078d4', bg:'#e6f2fb', label:'FASE 1' },
+  'Fase 2':    { color:'#2b7a3c', bg:'#dff6dd', label:'FASE 2' },
+  'Fase 3':    { color:'#8764b8', bg:'#ede8f8', label:'FASE 3' },
+  'Fase 4':    { color:'#d83b01', bg:'#fde7d5', label:'FASE 4' },
+  'Fase 5':    { color:'#107c6e', bg:'#d8f0ec', label:'FASE 5' },
+  'Operación': { color:'#986f0b', bg:'#fff4ce', label:'OPERACIÓN' },
+};
+
+function itemNumLabel(id) {
+  const map = { i1:'Ítem 1', i2:'Ítem 2', i3:'Ítem 3', i4:'Ítem 4',
+                i5:'Ítem 5', i6:'Ítem 6', i7:'Ítem 7', i8:'Ítem 8' };
+  return map[id] || '';
+}
+
+function renderItems() {
+  const tbody = document.getElementById('items-body');
+  tbody.innerHTML = '';
+  const dash = '<span style="color:var(--gray-4)">—</span>';
+
+  let lastFase = null;
+  // Subtotals per group
+  const groupTotals = {};
+
+  S.items.forEach((it, idx) => {
+    const { cost, revenue, margin$, marginPct, totalHrs } = calcItemCosts(it.id);
+    const fc = FASE_CONFIG[it.fase] || { color:'#343a40', bg:'#f8f9fa', label: it.fase };
+
+    // Phase group header
+    if (it.fase !== lastFase) {
+      const pBudget = it.presupuesto === 'Evolutivo'
+        ? '<span style="font-size:10px;background:#8764b8;color:white;padding:2px 7px;border-radius:10px;margin-left:8px;">Pool 26.545 UTM</span>'
+        : '<span style="font-size:10px;background:#0078d4;color:white;padding:2px 7px;border-radius:10px;margin-left:8px;">Contrato Base 41.834 UTM</span>';
+      tbody.innerHTML += `<tr>
+        <td colspan="8" style="background:${fc.bg};padding:6px 12px;border-top:2px solid ${fc.color};">
+          <span style="font-size:11px;font-weight:700;color:${fc.color};text-transform:uppercase;letter-spacing:.5px;">${fc.label}</span>
+          ${pBudget}
+        </td>
+      </tr>`;
+      lastFase = it.fase;
+    }
+
+    // Item row (sin IVA en consultoría)
+    tbody.innerHTML += `<tr class="item-row" id="irow-${it.id}" onclick="toggleItemDetail('${it.id}')"
+        style="border-left:3px solid ${fc.color}">
+      <td>
+        <span style="font-size:10px;font-weight:700;color:${fc.color};margin-right:6px;">${itemNumLabel(it.id)}</span>
+        <strong>${it.name}</strong>
+        ${it.note ? `<span style="font-size:11px;color:var(--gray-4);margin-left:4px;">(${it.note})</span>` : ''}
+      </td>
+      <td class="center">${it.qty}</td>
+      <td class="right">${totalHrs > 0 ? totalHrs.toLocaleString('es-CL') + ' hrs' : dash}</td>
+      <td class="right">${cost > 0 ? clp(cost) : dash}</td>
+      <td class="right">${revenue > 0 ? clp(revenue) : dash}</td>
+      <td class="right" style="background:#f4fbf4;font-weight:600;color:#2b7a3c">${revenue > 0 ? uf(revenue) : dash}</td>
+      <td class="right">${margin$ !== 0 ? clp(margin$) : dash}</td>
+      <td class="right">${revenue > 0 ? badgeMargin(marginPct) : dash}</td>
+    </tr>`;
+    tbody.innerHTML += `<tr class="item-detail-row" id="idetail-${it.id}" style="display:none">
+      <td colspan="8"><div class="item-detail-inner">${buildItemDetail(it)}</div></td>
+    </tr>`;
+  });
+
+  // Total row
+  const ct = calcConsultingTotals();
+  const totalHrsAll = S.items.reduce((a,it) => { const c=calcItemCosts(it.id); return a+c.totalHrs; },0);
+  tbody.innerHTML += `<tr class="total-row">
+    <td>TOTAL CONSULTORÍA</td>
+    <td></td>
+    <td class="right">${totalHrsAll.toLocaleString('es-CL')} hrs</td>
+    <td class="right">${clp(ct.cost)}</td>
+    <td class="right">${clp(ct.revenue)}</td>
+    <td class="right">${uf(ct.revenue)}</td>
+    <td class="right">${clp(ct.margin$)}</td>
+    <td class="right">${pct(ct.marginPct)}</td>
+  </tr>`;
+}
+
+function buildItemDetail(it) {
+  let rows = '';
+  let totHrs = 0, totCost = 0, totRev = 0;
+  S.profiles.forEach(p => {
+    const h = getHours(it.id, p.id);
+    const cost = h * p.costRate;
+    const rev = h * p.billRate;
+    totHrs += h; totCost += cost; totRev += rev;
+    rows += `<tr>
+      <td>${p.name}</td>
+      <td class="right"><input type="number" class="small" min="0" value="${h}" style="width:70px"
+        oninput="updateHours('${it.id}','${p.id}',this.value)"></td>
+      <td class="right">${clp(p.costRate)}/hr</td>
+      <td class="right" style="color:#2b7a3c;font-weight:600">${clp(p.billRate)}/hr</td>
+      <td class="right">${cost > 0 ? clp(cost) : '—'}</td>
+      <td class="right" style="color:#2b7a3c">${rev > 0 ? clp(rev) : '—'}</td>
+      <td class="right" style="background:#f4fbf4;color:#2b7a3c;font-weight:600">${rev > 0 ? uf(rev) : '—'}</td>
+      <td class="right">${rev > 0 ? badgeMargin((rev-cost)/rev*100) : '—'}</td>
+    </tr>`;
+  });
+  const totMargin = totRev > 0 ? (totRev-totCost)/totRev*100 : 0;
+  rows += `<tr class="total-row">
+    <td>TOTAL ÍTEM</td>
+    <td class="right">${totHrs} hrs</td>
+    <td></td><td></td>
+    <td class="right">${clp(totCost)}</td>
+    <td class="right">${clp(totRev)}</td>
+    <td class="right">${uf(totRev)}</td>
+    <td class="right">${pct(totMargin)}</td>
+  </tr>`;
+  return `<table>
+    <thead><tr>
+      <th>Perfil</th><th class="right">Horas</th>
+      <th class="right">Costo/hr</th>
+      <th class="right" style="color:#2b7a3c">Precio/hr</th>
+      <th class="right">Costo Total</th>
+      <th class="right" style="color:#2b7a3c">Precio Venta CLP</th>
+      <th class="right" style="background:#e8f4e8;color:#2b7a3c">Precio Venta UF</th>
+      <th class="right">Margen</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function updateHours(itemId, profileId, val) {
+  setHours(itemId, profileId, val);
+  // Refresh the detail row only
+  const it = S.items.find(x => x.id === itemId);
+  const detailCell = document.querySelector(`#idetail-${itemId} .item-detail-inner`);
+  if (detailCell) detailCell.innerHTML = buildItemDetail(it);
+  recalcAll();
+  // Re-render items table numbers without collapsing expanded rows
+  refreshItemsRowData();
+}
+
+function refreshItemsRowData() {
+  const dash = '<span style="color:var(--gray-4)">—</span>';
+  S.items.forEach(it => {
+    const row = document.getElementById('irow-' + it.id);
+    if (!row) return;
+    const { cost, revenue, margin$, marginPct, totalHrs } = calcItemCosts(it.id);
+    const cells = row.querySelectorAll('td');
+    cells[2].innerHTML = totalHrs > 0 ? totalHrs.toLocaleString('es-CL') + ' hrs' : dash;
+    cells[3].innerHTML = cost > 0 ? clp(cost) : dash;
+    cells[4].innerHTML = revenue > 0 ? clp(revenue) : dash;
+    cells[5].innerHTML = revenue > 0 ? uf(revenue) : dash;
+    cells[6].innerHTML = margin$ !== 0 ? clp(margin$) : dash;
+    cells[7].innerHTML = revenue > 0 ? badgeMargin(marginPct) : dash;
+  });
+}
+
+function toggleItemDetail(id) {
+  const detail = document.getElementById('idetail-' + id);
+  const row = document.getElementById('irow-' + id);
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'table-row';
+  row.classList.toggle('expanded', !isOpen);
+}
+
+function togglePnlI8Detail() {
+  const detail = document.getElementById('pnl-i8-detail');
+  const toggle = document.getElementById('pnl-i8-toggle');
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'table-row';
+  if (toggle) toggle.textContent = isOpen ? '▶' : '▼';
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: EQUALIZADOR
+// ═══════════════════════════════════════════════════
+function refreshRfpPanel() {
+  const rfp      = S.rfp;
+  const iva      = 1 + (S.ivaRate || 19) / 100;
+  const discount = S.competitiveDiscount || 0;
+  const factor   = 1 - discount / 100;
+
+  const fmtUF  = n => n.toLocaleString('es-CL',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' UF';
+  const fmtUTM = n => Math.round(n).toLocaleString('es-CL') + ' UTM';
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  // RFP values
+  setText('rfp-base-uf',     fmtUF(utmToUF(rfp.baseUTM)));
+  setText('rfp-base-clp',    clp(utmToCLP(rfp.baseUTM)));
+  setText('rfp-sprints-uf',  fmtUF(utmToUF(rfp.sprintsUTM)));
+  setText('rfp-sprints-clp', clp(utmToCLP(rfp.sprintsUTM)));
+  setText('rfp-total-uf',    fmtUF(utmToUF(rfp.totalUTM)));
+  setText('rfp-total-clp',   clp(utmToCLP(rfp.totalUTM)));
+
+  // Net sin IVA
+  setText('rfp-base-net',  Math.round(rfp.baseUTM    / iva).toLocaleString('es-CL'));
+  setText('rfp-spr-net',   Math.round(rfp.sprintsUTM / iva).toLocaleString('es-CL'));
+  setText('rfp-total-net', Math.round(rfp.totalUTM   / iva).toLocaleString('es-CL'));
+
+  // Offer prices (RFP × factor)
+  const baseOffer    = rfp.baseUTM    * factor;
+  const sprintsOffer = rfp.sprintsUTM * factor;
+  const totalOffer   = rfp.totalUTM   * factor;
+
+  setText('rfp-base-offer-utm',  fmtUTM(baseOffer));
+  setText('rfp-base-offer-uf',   fmtUF(utmToUF(baseOffer)));
+  setText('rfp-base-offer-clp',  clp(utmToCLP(baseOffer)));
+  setText('rfp-spr-offer-utm',   fmtUTM(sprintsOffer));
+  setText('rfp-spr-offer-uf',    fmtUF(utmToUF(sprintsOffer)));
+  setText('rfp-spr-offer-clp',   clp(utmToCLP(sprintsOffer)));
+  setText('rfp-total-offer-utm', fmtUTM(totalOffer));
+  setText('rfp-total-offer-uf',  fmtUF(utmToUF(totalOffer)));
+  setText('rfp-total-offer-clp', clp(utmToCLP(totalOffer)));
+
+  // Update all discount % badges
+  document.querySelectorAll('.dct-pct').forEach(el => el.textContent = discount);
+}
+
+function useRfpBudget(which) {
+  const rfp = S.rfp;
+  const utm = which === 'base' ? rfp.baseUTM : which === 'sprints' ? rfp.sprintsUTM : rfp.totalUTM;
+  const ufVal = utmToUF(utm);
+  S.municipalityBudgetUF = ufVal;
+  const muniInput = document.getElementById('municipality-budget-uf');
+  if (muniInput) muniInput.value = ufVal.toFixed(1);
+  updateMunicipalityBudget();
+}
+
+function updateMunicipalityBudget() {
+  const discount = Number(document.getElementById('competitive-discount')?.value) ?? 13;
+  S.competitiveDiscount = discount;
+
+  // Read manual UF input (may be empty → fall back to total RFP)
+  const muniInputVal = Number(document.getElementById('municipality-budget-uf')?.value) || 0;
+  // If user left it at 0, auto-use the total RFP converted to UF
+  const muniUF = muniInputVal > 0 ? muniInputVal : utmToUF(S.rfp.totalUTM);
+  S.municipalityBudgetUF = muniUF;
+
+  const muniCLP  = muniUF * getUfRate();
+  const offerUF  = muniUF * (1 - discount / 100);
+  const offerCLP = offerUF * getUfRate();
+
+  // Update CLP display
+  const muniClpEl = document.getElementById('eq-muni-clp');
+  if (muniClpEl) muniClpEl.textContent = clp(muniCLP);
+
+  // Feed into hidden target fields used by renderEqualizador
+  S.targetBudget = offerCLP;
+  const tbHidden   = document.getElementById('target-budget');
+  const tbUfHidden = document.getElementById('target-budget-uf');
+  if (tbHidden)   tbHidden.value   = Math.round(offerCLP);
+  if (tbUfHidden) tbUfHidden.value = offerUF.toFixed(2);
+
+  renderEqualizador();
+}
+
+// Keep these for backwards compat (hidden inputs)
+function updateEqualizador() {
+  S.targetBudget = Number(document.getElementById('target-budget').value) || 0;
+  renderEqualizador();
+}
+function updateEqualizadorFromUF() {
+  const ufVal = Number(document.getElementById('target-budget-uf').value) || 0;
+  S.targetBudget = ufVal * getUfRate();
+  renderEqualizador();
+}
+
+function renderEqualizador() {
+  refreshRfpPanel();
+  const ct = calcConsultingTotals();
+  const totalCalc = ct.revenue;
+  document.getElementById('eq-calc-total').textContent = clp(totalCalc);
+  const ufTotalEl = document.getElementById('eq-calc-total-uf');
+  if (ufTotalEl) ufTotalEl.textContent = uf(totalCalc);
+
+  const targetBudget = S.targetBudget;
+  const discount     = S.competitiveDiscount || 0;
+  const gapBox = document.getElementById('eq-gap-box');
+  const gapEl  = document.getElementById('eq-gap');
+  if (targetBudget > 0) {
+    gapBox.style.display = 'block';
+    const gap = totalCalc - targetBudget;
+    const gapUF = gap / getUfRate();
+    const sign = gap >= 0 ? '+' : '';
+    gapEl.innerHTML = `<span style="font-size:18px">${sign}${clp(gap)}</span><br>
+      <span style="font-size:12px;font-weight:400">${sign}${gapUF.toFixed(1)} UF</span>`;
+    gapEl.style.background = gap > 0 ? 'var(--red-light)'   : 'var(--green-light)';
+    gapEl.style.color      = gap > 0 ? 'var(--red)' : 'var(--green)';
+  } else {
+    gapBox.style.display = 'none';
+  }
+
+  // Weight bar
+  const wbar = document.getElementById('weight-bar');
+  wbar.innerHTML = '';
+  const colors = ['#0078d4','#2b7a3c','#8764b8','#d83b01','#107c6e','#986f0b','#c43e1c','#4a5e8a'];
+
+  S.items.forEach((it, idx) => {
+    const { revenue } = calcItemCosts(it.id);
+    const w = totalCalc > 0 ? (revenue / totalCalc * 100) : (100/S.items.length);
+    if (w < 0.5) return;
+    const seg = document.createElement('div');
+    seg.className = 'weight-bar-segment';
+    seg.style.width = w + '%';
+    seg.style.background = colors[idx % colors.length];
+    seg.setAttribute('data-tooltip', `${it.name}: ${pct(w)} · ${uf(revenue)}`);
+    seg.textContent = w > 5 ? pct(w) : '';
+    wbar.appendChild(seg);
+  });
+
+  // Table
+  const tbody = document.getElementById('eq-body');
+  tbody.innerHTML = '';
+  let totalPct = 0, totalTarget = 0, totalGap = 0;
+
+  let lastEqFase = null;
+  S.items.forEach((it, idx) => {
+    const { revenue } = calcItemCosts(it.id);
+    const w = totalCalc > 0 ? (revenue / totalCalc * 100) : 0;
+    totalPct += w;
+    const targetAmt = targetBudget > 0 ? targetBudget * w / 100 : 0;
+    const gap = targetBudget > 0 ? revenue - targetAmt : 0;
+    totalTarget += targetAmt;
+    totalGap += gap;
+
+    const fc = FASE_CONFIG[it.fase] || { color:'#343a40', bg:'#f8f9fa', label: it.fase };
+
+    // Phase separator row
+    if (it.fase !== lastEqFase) {
+      const pBudget = it.presupuesto === 'Evolutivo'
+        ? '<span style="font-size:10px;background:#8764b8;color:white;padding:1px 6px;border-radius:8px;margin-left:6px;">Pool 26.545 UTM</span>'
+        : '<span style="font-size:10px;background:var(--blue);color:white;padding:1px 6px;border-radius:8px;margin-left:6px;">Base 41.834 UTM</span>';
+      tbody.innerHTML += `<tr>
+        <td colspan="8" style="background:${fc.bg};padding:5px 10px;border-top:2px solid ${fc.color};">
+          <span style="font-size:11px;font-weight:700;color:${fc.color};text-transform:uppercase;letter-spacing:.4px;">${fc.label}</span>
+          ${pBudget}
+        </td>
+      </tr>`;
+      lastEqFase = it.fase;
+    }
+
+    const barHtml = `<div style="background:var(--gray-2);height:8px;border-radius:4px;overflow:hidden">
+      <div style="width:${Math.min(w,100)}%;height:100%;background:${colors[idx%colors.length]};border-radius:4px;"></div></div>`;
+
+    tbody.innerHTML += `<tr style="border-left:3px solid ${fc.color}">
+      <td>
+        <span style="width:10px;height:10px;background:${colors[idx%colors.length]};display:inline-block;border-radius:2px;margin-right:5px;vertical-align:middle"></span>
+        <span style="font-size:10px;font-weight:700;color:${fc.color};margin-right:4px;">${itemNumLabel(it.id)}</span>
+        ${it.name}
+      </td>
+      <td class="right">${revenue > 0 ? clp(revenue) : '—'}</td>
+      <td class="right" style="background:#f4fbf4;color:#2b7a3c;font-weight:600">${revenue > 0 ? uf(revenue) : '—'}</td>
+      <td class="right"><strong>${w > 0 ? pct(w) : '—'}</strong></td>
+      <td>${barHtml}</td>
+      <td class="right">${targetBudget > 0 ? clp(targetAmt) : '—'}</td>
+      <td class="right" style="background:#fff8e8;color:var(--orange);font-weight:700">${targetBudget > 0 ? uf(targetAmt) : '—'}</td>
+      <td class="right">${targetBudget > 0 ? `<div style="color:${gap>=0?'var(--red)':'var(--green)'};font-weight:700">${(gap>=0?'+':'')+clp(gap)}</div><div style="font-size:10px;color:var(--gray-4)">${gap>=0?'+':''}${(gap/getUfRate()).toFixed(1)} UF</div>` : '—'}</td>
+    </tr>`;
+  });
+
+  document.getElementById('eq-total-calc').textContent = clp(totalCalc);
+  const ufCalcEl = document.getElementById('eq-total-calc-uf');
+  if (ufCalcEl) ufCalcEl.textContent = uf(totalCalc);
+  document.getElementById('eq-total-pct').innerHTML = `<span class="${Math.abs(totalPct-100) < 0.5 ? 'ok-pct':'warn-pct'}">${pct(totalPct)}</span>`;
+  document.getElementById('eq-total-target').textContent = targetBudget > 0 ? clp(totalTarget) : '—';
+  const ufTargetEl = document.getElementById('eq-total-target-uf');
+  if (ufTargetEl) ufTargetEl.textContent = targetBudget > 0 ? uf(totalTarget) : '—';
+  document.getElementById('eq-total-gap').innerHTML = targetBudget > 0 ? `<span style="color:${totalGap>=0?'var(--red)':'var(--green)'}">${(totalGap>=0?'+':'')+clp(totalGap)}</span>` : '—';
+
+  const alertEl = document.getElementById('eq-weight-sum-alert');
+  if (totalCalc === 0) {
+    alertEl.innerHTML = '<div class="alert alert-info">ℹ️ Ingresa horas en la pestaña "Ítems y Horas" para ver la distribución de pesos.</div>';
+  } else {
+    alertEl.innerHTML = '';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: LICENSES
+// ═══════════════════════════════════════════════════
+function licRowCalc(lic, fx) {
+  const mult = lic.units * lic.period;
+  const fxFactor = lic.currency === 'USD' ? fx : 1;
+  const costCLPTotal = lic.costUnit  * mult * fxFactor;
+  const revCLPTotal  = lic.priceUnit * mult * fxFactor;
+  const costUSDmon   = lic.costUnit  * lic.units;
+  const revUSDmon    = lic.priceUnit * lic.units;
+  const revCLPmon    = revUSDmon * fxFactor;
+  const margin$      = revCLPTotal - costCLPTotal;
+  const marginPct    = revCLPTotal > 0 ? margin$ / revCLPTotal * 100 : 0;
+  return { costCLPTotal, revCLPTotal, costUSDmon, revUSDmon, revCLPmon, margin$, marginPct };
+}
+
+function renderLicenseGroup(group, label, icon, headerColor, groupList, fx) {
+  if (!groupList.length) return '';
+  let html = `
+  <div style="margin-bottom:20px;">
+    <div style="background:${headerColor};color:white;padding:10px 14px;border-radius:6px 6px 0 0;
+                display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-weight:700;font-size:13px">${icon} ${label}</span>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4)"
+        onclick="addLicenseItem('${group}')">+ Agregar</button>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--gray-3);border-top:none;border-radius:0 0 6px 6px;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:var(--gray-1)">
+          <th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--gray-3);font-size:11px;min-width:180px">Producto</th>
+          <th style="padding:7px 6px;text-align:center;border-bottom:1px solid var(--gray-3);font-size:11px;width:40px">Act.</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px;width:60px">Cant.</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px;width:90px">USD/mes unit.</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px;width:90px">Costo unit.</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px">USD/mes total</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px">CLP/mes total</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px;background:#e8f4e8;color:#2b7a3c">CLP total ${groupList[0]?.period||48} meses</th>
+          <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--gray-3);font-size:11px">Margen %</th>
+          ${group==='microsoft'?`<th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--gray-3);font-size:10px;color:var(--gray-4)">SKU</th>`:''}
+          <th style="padding:7px 6px;border-bottom:1px solid var(--gray-3);width:28px"></th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  let grpRevTotal = 0, grpCostTotal = 0;
+  groupList.forEach(lic => {
+    const idx = S.licenses.indexOf(lic);
+    const r = licRowCalc(lic, fx);
+    if (lic.active) { grpRevTotal += r.revCLPTotal; grpCostTotal += r.costCLPTotal; }
+    const dim = !lic.active ? 'opacity:0.4' : '';
+    html += `<tr style="${dim};border-bottom:1px solid var(--gray-2)" onmouseover="this.style.background='var(--blue-light)'" onmouseout="this.style.background=''">
+      <td style="padding:6px 10px">
+        <input type="text" value="${lic.name}" style="width:100%;border:none;background:transparent;font-size:12px;font-weight:600;"
+          oninput="S.licenses[${idx}].name=this.value">
+        ${lic.desc ? `<div style="font-size:10px;color:var(--gray-4);font-style:italic">${lic.desc}</div>` : ''}
+      </td>
+      <td style="padding:6px;text-align:center">
+        <input type="checkbox" ${lic.active?'checked':''} onchange="S.licenses[${idx}].active=this.checked;recalcAll()">
+      </td>
+      <td style="padding:6px 8px;text-align:right">
+        <input type="number" value="${lic.units}" min="0"
+          style="width:54px;text-align:right;border:1px solid var(--gray-3);border-radius:3px;padding:3px 4px;font-size:12px;font-weight:700;color:var(--blue)"
+          oninput="S.licenses[${idx}].units=Number(this.value);recalcAll()">
+      </td>
+      <td style="padding:6px 8px;text-align:right">
+        <input type="number" value="${lic.priceUnit}" min="0" step="0.01"
+          style="width:76px;text-align:right;border:1px solid var(--gray-3);border-radius:3px;padding:3px 4px;font-size:12px;font-weight:700;color:var(--blue)"
+          oninput="S.licenses[${idx}].priceUnit=Number(this.value);recalcAll()">
+      </td>
+      <td style="padding:6px 8px;text-align:right">
+        <input type="number" value="${lic.costUnit}" min="0" step="0.01"
+          style="width:76px;text-align:right;border:1px solid var(--gray-3);border-radius:3px;padding:3px 4px;font-size:12px;color:var(--gray-5)"
+          oninput="S.licenses[${idx}].costUnit=Number(this.value);recalcAll()">
+      </td>
+      <td style="padding:6px 8px;text-align:right;color:var(--blue)">USD ${r.revUSDmon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="padding:6px 8px;text-align:right">${clp(r.revCLPmon)}</td>
+      <td style="padding:6px 8px;text-align:right;background:#f4fbf4;font-weight:700;color:#2b7a3c">${clp(r.revCLPTotal)}</td>
+      <td style="padding:6px 8px;text-align:right">${lic.active ? badgeMargin(r.marginPct) : '—'}</td>
+      ${group==='microsoft'?`<td style="padding:6px 8px;font-size:9px;color:var(--gray-4);max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${lic.sku||''}">${lic.sku||''}</td>`:''}
+      <td style="padding:4px;text-align:center">
+        <button onclick="removeLicense(${idx})" style="background:none;border:none;color:var(--gray-4);cursor:pointer;font-size:14px;line-height:1" title="Eliminar">×</button>
+      </td>
+    </tr>`;
+  });
+
+  const grpMarginPct = grpRevTotal > 0 ? (grpRevTotal-grpCostTotal)/grpRevTotal*100 : 0;
+  const grpRevMon = groupList.filter(l=>l.active).reduce((a,l)=>a+licRowCalc(l,fx).revUSDmon,0);
+  html += `<tr style="background:${headerColor}22;font-weight:700">
+    <td colspan="5" style="padding:7px 10px;color:${headerColor}">SUBTOTAL ${label.toUpperCase()}</td>
+    <td style="padding:7px 8px;text-align:right;color:var(--blue)">USD ${grpRevMon.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="padding:7px 8px;text-align:right">${clp(grpRevMon * fx)}</td>
+    <td style="padding:7px 8px;text-align:right;color:#2b7a3c">${clp(grpRevTotal)}</td>
+    <td style="padding:7px 8px;text-align:right">${badgeMargin(grpMarginPct)}</td>
+    ${group==='microsoft'?'<td></td>':''}
+    <td></td>
+  </tr>`;
+
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+function renderLicenses() {
+  const fx = S.exchangeRate || 950;
+  const body = document.getElementById('licenses-body');
+
+  const msft  = S.licenses.filter(l => l.group === 'microsoft');
+  const azure = S.licenses.filter(l => l.group === 'azure');
+  const other = S.licenses.filter(l => !l.group || l.group === 'other');
+
+  body.innerHTML =
+    renderLicenseGroup('microsoft', 'Microsoft Dynamics 365 + Power Platform', '🏢', '#0078d4', msft,  fx) +
+    renderLicenseGroup('azure',     'Azure Services',                           '☁️', '#0089d6', azure, fx) +
+    (other.length ? renderLicenseGroup('other', 'Otros', '📦', '#6c757d', other, fx) : '');
+
+  // Summary panel (usa Raw porque las licencias están absorbidas en i8 para el P&L)
+  const lt = calcLicenseTotalsRaw();
+  const sumEl = document.getElementById('lic-summary');
+  const msftRev  = msft.filter(l=>l.active).reduce((a,l)=>a+licRowCalc(l,fx).revCLPTotal,0);
+  const azureRev = azure.filter(l=>l.active).reduce((a,l)=>a+licRowCalc(l,fx).revCLPTotal,0);
+  sumEl.innerHTML = `
+    <div style="display:grid;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between"><span>🏢 Microsoft (48m):</span><strong style="color:var(--blue)">${clp(msftRev)}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>☁️ Azure (48m):</span><strong style="color:#0089d6">${clp(azureRev)}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-3);padding-top:6px"><span>Costo Total:</span><strong style="color:var(--red)">${clp(lt.cost)}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>Precio Total:</span><strong style="color:var(--blue)">${clp(lt.revenue)}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>Precio + IVA:</span><strong style="color:#8764b8">${clp(gross(lt.revenue))}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>UF total (48m):</span><strong style="color:#2b7a3c">${uf(lt.revenue)}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:2px solid var(--gray-3);padding-top:6px"><span>Margen %:</span><strong>${badgeMargin(lt.marginPct)}</strong></div>
+    </div>`;
+}
+
+function addLicenseItem(group) {
+  S.licenses.push({ id:'lic'+Date.now(), group: group||'microsoft', name:'Nueva Licencia', sku:'', currency:'USD', costUnit:0, priceUnit:0, units:1, period:48, active:true });
+  recalcAll();
+}
+function removeLicense(idx) {
+  S.licenses.splice(idx, 1);
+  recalcAll();
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: IMPONDERABLES
+// ═══════════════════════════════════════════════════
+function renderImpRow(imp, idx, impact, ctRevenue, totalRevenue) {
+  const isPercent  = imp.type === 'percent';
+  const isFixedUF  = imp.type === 'fixed_uf';
+  const isFixedCLP = imp.type === 'fixed_clp';
+  const catColor   = imp.category === 'otro' ? '#8764b8' : 'var(--red)';
+  const baseLabel  = imp.base === 'consulting' ? 'Consultoría neta' : 'Total proyecto neto';
+
+  // Input block depending on type
+  let inputBlock = '';
+  if (isPercent) {
+    inputBlock = `
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:3px">% APLICADO</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" value="${imp.rate}" min="0" max="100" step="0.5"
+            style="width:60px;padding:5px 6px;border:1px solid var(--gray-3);border-radius:4px;font-size:13px;text-align:right"
+            oninput="S.imponderables[${idx}].rate=Number(this.value);recalcAll()">
+          <span style="color:var(--gray-5)">%</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray-4);margin-top:3px">Base: ${baseLabel}</div>
+      </div>`;
+  } else if (isFixedUF) {
+    inputBlock = `
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:3px">MONTO UF</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" value="${imp.amount_uf||0}" min="0" step="1"
+            style="width:80px;padding:5px 6px;border:1px solid #c9b3e8;border-radius:4px;font-size:13px;font-weight:700;text-align:right;color:#8764b8"
+            oninput="S.imponderables[${idx}].amount_uf=Number(this.value);recalcAll()">
+          <span style="color:#8764b8">UF</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray-4);margin-top:3px">${clp((imp.amount_uf||0)*getUfRate())}</div>
+      </div>`;
+  } else if (isFixedCLP) {
+    inputBlock = `
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--gray-5);margin-bottom:3px">MONTO CLP</div>
+        <input type="number" value="${imp.amount_clp||0}" min="0" step="100000"
+          style="width:120px;padding:5px 6px;border:1px solid var(--gray-3);border-radius:4px;font-size:13px;text-align:right"
+          oninput="S.imponderables[${idx}].amount_clp=Number(this.value);recalcAll()">
+      </div>`;
+  }
+
+  return `
+  <div class="imp-row">
+    <div style="flex:1">
+      <label class="toggle-switch" style="align-items:flex-start">
+        <input type="checkbox" ${imp.enabled?'checked':''} onchange="S.imponderables[${idx}].enabled=this.checked;recalcAll()" style="margin-top:2px">
+        <div>
+          <div class="imp-name" style="color:${imp.enabled?catColor:'var(--gray-4)'}">${imp.name}</div>
+          <div class="imp-desc">${imp.desc}</div>
+        </div>
+      </label>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+      ${inputBlock}
+      <div class="imp-impact" style="color:${catColor};min-width:160px;text-align:right">
+        ${imp.enabled ? `<div style="font-size:14px;font-weight:700">−${clp(impact)}</div><div style="font-size:11px;color:var(--gray-5)">−${uf(impact)}</div>` : '<span style="color:var(--gray-4)">—</span>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderImponderables() {
+  const ct = calcConsultingTotals();
+  const lt = calcLicenseTotals();
+  const totalRev = ct.revenue + lt.revenue;
+  const body = document.getElementById('imp-body');
+  body.innerHTML = '';
+
+  let impImpact = 0, otroImpact = 0;
+  const impData = [];
+
+  const impGroup  = S.imponderables.filter(x => x.category === 'imponderable');
+  const otroGroup = S.imponderables.filter(x => x.category === 'otro');
+
+  // ── Sección IMPONDERABLES ──────────────────────────
+  body.innerHTML += `
+    <div style="font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.6px;
+                padding:10px 0 6px;border-bottom:2px solid var(--red-light);margin-bottom:4px;">
+      ⚠️ Imponderables — Riesgos Contractuales
+      <span style="font-size:10px;font-weight:400;color:var(--gray-5);text-transform:none;letter-spacing:0;margin-left:8px;">
+        (escenario si se cobran las garantías establecidas)
+      </span>
+    </div>`;
+
+  impGroup.forEach(imp => {
+    const idx = S.imponderables.indexOf(imp);
+    const impact = calcImpactAmount(imp, ct.revenue, totalRev);
+    impImpact += impact;
+    impData.push({ name: imp.name, impact });
+    body.innerHTML += renderImpRow(imp, idx, impact, ct.revenue, totalRev);
+  });
+
+  // subtotal imponderables
+  body.innerHTML += `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                background:var(--red-light);border-radius:5px;padding:8px 12px;margin:8px 0 16px;">
+      <span style="font-weight:600;color:var(--red);font-size:13px">Subtotal Imponderables</span>
+      <span style="font-weight:700;color:var(--red);font-size:15px">−${clp(impImpact)}
+        <span style="font-size:11px;font-weight:400"> / −${uf(impImpact)}</span>
+      </span>
+    </div>`;
+
+  // ── Sección OTROS COSTOS ──────────────────────────
+  body.innerHTML += `
+    <div style="font-size:12px;font-weight:700;color:#8764b8;text-transform:uppercase;letter-spacing:.6px;
+                padding:10px 0 6px;border-bottom:2px solid #e4d8f8;margin-bottom:4px;">
+      💼 Otros Costos Asociados
+    </div>`;
+
+  otroGroup.forEach(imp => {
+    const idx = S.imponderables.indexOf(imp);
+    const impact = calcImpactAmount(imp, ct.revenue, totalRev);
+    otroImpact += impact;
+    impData.push({ name: imp.name, impact });
+    body.innerHTML += renderImpRow(imp, idx, impact, ct.revenue, totalRev);
+  });
+
+  // subtotal otros
+  body.innerHTML += `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                background:#f0ebfc;border-radius:5px;padding:8px 12px;margin:8px 0 16px;">
+      <span style="font-weight:600;color:#8764b8;font-size:13px">Subtotal Otros Costos</span>
+      <span style="font-weight:700;color:#8764b8;font-size:15px">−${clp(otroImpact)}
+        <span style="font-size:11px;font-weight:400"> / −${uf(otroImpact)}</span>
+      </span>
+    </div>`;
+
+  const totalImpact = impImpact + otroImpact;
+
+  // Summary
+  const grossMargin = ct.margin$ + lt.margin$;
+  const netMargin   = grossMargin - totalImpact;
+  const grossPct    = totalRev > 0 ? grossMargin / totalRev * 100 : 0;
+  const netPct      = totalRev > 0 ? netMargin   / totalRev * 100 : 0;
+
+  const sumEl = document.getElementById('imp-summary');
+  sumEl.innerHTML = `
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr><td style="padding:5px 0">Margen Bruto</td>
+          <td style="text-align:right;font-weight:700">${clp(grossMargin)}
+            <div style="font-size:11px;font-weight:400;color:var(--gray-5)">${pct(grossPct)}</div></td></tr>
+      <tr><td style="padding:5px 0;color:var(--red)">− Imponderables</td>
+          <td style="text-align:right;font-weight:700;color:var(--red)">−${clp(impImpact)}
+            <div style="font-size:11px;font-weight:400">−${uf(impImpact)}</div></td></tr>
+      <tr><td style="padding:5px 0;color:#8764b8">− Otros Costos</td>
+          <td style="text-align:right;font-weight:700;color:#8764b8">−${clp(otroImpact)}
+            <div style="font-size:11px;font-weight:400">−${uf(otroImpact)}</div></td></tr>
+      <tr style="border-top:2px solid var(--gray-3)">
+        <td style="font-weight:700;padding-top:8px">Margen Neto Estimado</td>
+        <td style="text-align:right;padding-top:8px">
+          <div style="font-size:18px;font-weight:700;color:${netMargin>=0?'var(--green)':'var(--red)'}">${clp(netMargin)}</div>
+          <div style="font-size:12px;color:var(--gray-5)">${pct(netPct)} · ${uf(netMargin)}</div>
+        </td>
+      </tr>
+    </table>`;
+
+  renderImpChart(impData, grossMargin);
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: RESUMEN / DASHBOARD
+// ═══════════════════════════════════════════════════
+function renderResumen() {
+  const ct  = calcConsultingTotals();
+  const lt  = calcLicenseTotals();
+  // ── Separación base / opcional ── (DECLARAR PRIMERO para usarlas en tarjetas)
+  const ctBase = calcConsultingBase();
+  const ctOpt  = calcConsultingOptional();
+  const incOpt = S.includeOptional;
+
+  // Totales según escenario activo
+  const ctEff = {
+    cost:      ctBase.cost    + (incOpt ? ctOpt.cost    : 0),
+    revenue:   ctBase.revenue + (incOpt ? ctOpt.revenue : 0),
+    margin$:   ctBase.margin$ + (incOpt ? ctOpt.margin$ : 0),
+  };
+  ctEff.marginPct = ctEff.revenue > 0 ? ctEff.margin$/ctEff.revenue*100 : 0;
+
+  // IVA solo en licencias
+  const ltGross     = gross(lt.revenue);
+  const ivaOnLic    = ltGross - lt.revenue;
+  const totalRev    = ctEff.revenue + lt.revenue;
+  const totalCost   = ctEff.cost    + lt.cost;
+  const grossMargin$ = totalRev - totalCost;
+  const grossMarginPct = totalRev > 0 ? grossMargin$/totalRev*100 : 0;
+  const impImpact   = calcImponderableImpactOn(ctEff.revenue, totalRev);
+  const netMargin$  = grossMargin$ - impImpact;
+  const netMarginPct = totalRev > 0 ? netMargin$/totalRev*100 : 0;
+  const totalClientPrice = ctEff.revenue + ltGross;
+  const incOptSC = incOpt;
+  const sg = document.getElementById('summary-grid');
+  sg.innerHTML = `
+    <div class="summary-card">
+      <div class="sc-label">Consultoría Base (sin IVA)</div>
+      <div class="sc-value" style="font-size:18px">${clp(ctBase.revenue)}</div>
+      <div class="sc-sub" style="font-weight:600;color:#2b7a3c">${uf(ctBase.revenue)}</div>
+    </div>
+    <div class="summary-card" style="border-left-color:#8764b8">
+      <div class="sc-label">Pool Evolutivo (Ítem 6 — Sprints)</div>
+      <div class="sc-value" style="font-size:18px;color:${incOptSC?'#8764b8':'var(--gray-4)'}">${clp(ctOpt.revenue)}</div>
+      <div class="sc-sub" style="color:${incOptSC?'#8764b8':'var(--gray-4)'}">${uf(ctOpt.revenue)}
+        <span style="font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;
+          background:${incOptSC?'#8764b8':'var(--gray-3)'};color:${incOptSC?'white':'var(--gray-5)'}">
+          ${incOptSC?'incluido':'excluido'}
+        </span>
+      </div>
+    </div>
+    <div class="summary-card" style="border-left-color:#8764b8">
+      <div class="sc-label">Licencias + IVA (${getIvaRate()}%)</div>
+      <div class="sc-value" style="font-size:18px;color:#8764b8">${clp(ltGross)}</div>
+      <div class="sc-sub" style="color:var(--gray-4)">IVA = ${clp(ivaOnLic)}</div>
+    </div>
+    <div class="summary-card green">
+      <div class="sc-label">Margen Bruto ${incOptSC?'(c/pool)':'(sin pool)'}</div>
+      <div class="sc-value">${clp(grossMargin$)}</div>
+      <div class="sc-sub">${pct(grossMarginPct)} · ${uf(grossMargin$)}</div>
+    </div>
+    <div class="summary-card orange">
+      <div class="sc-label">Imponderables</div>
+      <div class="sc-value" style="color:var(--red)">−${clp(impImpact)}</div>
+      <div class="sc-sub" style="color:var(--red)">−${uf(impImpact)}</div>
+    </div>
+    <div class="summary-card ${netMarginPct>=20?'green':netMarginPct>=10?'':'red'}">
+      <div class="sc-label">Margen Neto ${incOptSC?'(c/pool)':'(sin pool)'}</div>
+      <div class="sc-value" style="color:${netMarginPct>=20?'var(--green)':netMarginPct>=10?'var(--orange)':'var(--red)'}">${clp(netMargin$)}</div>
+      <div class="sc-sub" style="font-weight:600">${pct(netMarginPct)} · ${uf(netMargin$)}</div>
+    </div>
+  `;
+
+  // Items table
+  const tbody = document.getElementById('resumen-items-body');
+  tbody.innerHTML = '';
+  S.items.forEach((it, idx) => {
+    const { cost, revenue, margin$, marginPct } = calcItemCosts(it.id);
+    const w = ct.revenue > 0 ? revenue/ct.revenue*100 : 0;
+    const mc = marginClass(marginPct);
+    const bar = `<div class="margin-bar ${mc}" style="width:80px;display:inline-block"><div class="margin-bar-fill" style="width:${Math.min(Math.max(marginPct,0),100)}%"></div></div>`;
+    const fcR = FASE_CONFIG[it.fase] || { color:'#343a40' };
+    tbody.innerHTML += `<tr>
+      <td>
+        <span style="font-size:10px;font-weight:700;color:${fcR.color};margin-right:5px;">${itemNumLabel(it.id)}</span>
+        <span style="font-size:10px;color:var(--gray-4);margin-right:5px;">${it.fase}</span>
+        ${it.name}
+      </td>
+      <td class="right">${revenue > 0 ? clp(cost) : '—'}</td>
+      <td class="right">${revenue > 0 ? clp(revenue) : '—'}</td>
+      <td class="right" style="background:#f4fbf4;color:#2b7a3c;font-weight:600">${revenue > 0 ? uf(revenue) : '—'}</td>
+      <td class="right">${revenue > 0 ? clp(margin$) : '—'}</td>
+      <td class="right">${revenue > 0 ? badgeMargin(marginPct) : '—'}</td>
+      <td>${bar}</td>
+      <td class="right">${revenue > 0 ? pct(w) : '—'}</td>
+    </tr>`;
+  });
+  tbody.innerHTML += `<tr class="subtotal-row">
+    <td>Subtotal Consultoría (sin IVA)</td>
+    <td class="right">${clp(ct.cost)}</td>
+    <td class="right">${clp(ct.revenue)}</td>
+    <td class="right" style="color:#2b7a3c">${uf(ct.revenue)}</td>
+    <td class="right">${clp(ct.margin$)}</td>
+    <td class="right">${badgeMargin(ct.marginPct)}</td>
+    <td></td>
+    <td class="right">100%</td>
+  </tr>`;
+
+  // ── P&L separado: Base / Opcional / Licencias ────────────────────────
+  // (ctBase, ctOpt, ctEff, incOpt ya declarados al inicio de la función)
+  const effTotalClientPrice = ctEff.revenue + ltGross;
+  const effTotalRev         = ctEff.revenue + lt.revenue;
+  const effGrossMargin$     = ctEff.margin$ + lt.margin$;
+  const effGrossMarginPct   = effTotalRev > 0 ? effGrossMargin$/effTotalRev*100 : 0;
+  const effImpact = calcImponderableImpactOn(ctEff.revenue, effTotalRev);
+  const effNetMargin$   = effGrossMargin$ - effImpact;
+  const effNetMarginPct = effTotalRev > 0 ? effNetMargin$/effTotalRev*100 : 0;
+
+  // Scenario bar: Base-only vs. Full (always shown for comparison)
+  const baseTotal   = ctBase.revenue + ltGross;
+  const baseMargin$ = ctBase.margin$ + lt.margin$;
+  const baseImpact  = calcImponderableImpactOn(ctBase.revenue, ctBase.revenue + lt.revenue);
+  const baseNet$    = baseMargin$ - baseImpact;
+  const baseNetPct  = (ctBase.revenue + lt.revenue) > 0 ? baseNet$/(ctBase.revenue+lt.revenue)*100 : 0;
+
+  const fullTotal   = (ctBase.revenue + ctOpt.revenue) + ltGross;
+  const fullMargin$ = (ctBase.margin$ + ctOpt.margin$) + lt.margin$;
+  const fullRev     = ctBase.revenue + ctOpt.revenue + lt.revenue;
+  const fullImpact  = calcImponderableImpactOn(ctBase.revenue+ctOpt.revenue, fullRev);
+  const fullNet$    = fullMargin$ - fullImpact;
+  const fullNetPct  = fullRev > 0 ? fullNet$/fullRev*100 : 0;
+
+  const scBar = document.getElementById('pnl-scenario-bar');
+  if (scBar) {
+    const mkCard = (label, total, margin$, marginPct, active) => `
+      <div style="flex:1;min-width:180px;padding:10px 14px;border-radius:6px;
+        border:2px solid ${active?'var(--blue)':'var(--gray-3)'};
+        background:${active?'var(--blue-light)':'white'}">
+        <div style="font-size:10px;font-weight:700;color:${active?'var(--blue)':'var(--gray-5)'};text-transform:uppercase;margin-bottom:4px;">${label}</div>
+        <div style="font-size:18px;font-weight:700;color:${active?'var(--blue)':'var(--gray-5)'}">${clp(total)}</div>
+        <div style="font-size:11px;color:var(--gray-5)">${uf(total)}</div>
+        <div style="margin-top:6px;font-size:12px">Margen neto: <strong style="color:${marginPct>=20?'var(--green)':marginPct>=10?'var(--orange)':'var(--red)'}">${pct(marginPct)}</strong> (${clp(margin$)})</div>
+      </div>`;
+    // Referencia RFP en UTM y CLP
+    const rfpBaseUTM     = S.rfp.baseUTM;
+    const rfpPoolUTM     = S.rfp.sprintsUTM;
+    const rfpTotalUTM    = S.rfp.totalUTM;
+    const rfpBaseCLP     = utmToCLP(rfpBaseUTM);
+    const rfpPoolCLP     = utmToCLP(rfpPoolUTM);
+    const rfpTotalCLP    = utmToCLP(rfpTotalUTM);
+    const fmtUTM = n => Math.round(n).toLocaleString('es-CL') + ' UTM';
+
+    const rfpRef = `
+      <div style="width:100%;border-top:1px solid var(--gray-3);margin-top:10px;padding-top:10px;
+                  display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--gray-5);text-transform:uppercase;
+                    letter-spacing:.4px;min-width:80px">📋 Ref. RFP</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">
+          <div style="padding:5px 10px;border-radius:5px;background:#e6f2fb;border:1px solid #b3d4f0;font-size:11px;">
+            <span style="font-weight:700;color:var(--blue)">Base</span>
+            <span style="color:var(--gray-5);margin:0 4px">·</span>
+            <span style="font-weight:700">${fmtUTM(rfpBaseUTM)}</span>
+            <span style="color:var(--gray-5);margin:0 4px">=</span>
+            <span style="color:var(--blue-dark)">${clp(rfpBaseCLP)}</span>
+            <span style="font-size:10px;color:var(--gray-4);margin-left:3px">IVA incl.</span>
+          </div>
+          <div style="padding:5px 10px;border-radius:5px;background:#f5f0ff;border:1px solid #c9b3e8;font-size:11px;">
+            <span style="font-weight:700;color:#8764b8">Pool Evolutivo</span>
+            <span style="color:var(--gray-5);margin:0 4px">·</span>
+            <span style="font-weight:700">${fmtUTM(rfpPoolUTM)}</span>
+            <span style="color:var(--gray-5);margin:0 4px">=</span>
+            <span style="color:#8764b8">${clp(rfpPoolCLP)}</span>
+            <span style="font-size:10px;color:var(--gray-4);margin-left:3px">IVA incl.</span>
+          </div>
+          <div style="padding:5px 10px;border-radius:5px;background:var(--gray-2);border:1px solid var(--gray-3);font-size:11px;">
+            <span style="font-weight:700;color:var(--gray-6)">Total contrato</span>
+            <span style="color:var(--gray-5);margin:0 4px">·</span>
+            <span style="font-weight:700">${fmtUTM(rfpTotalUTM)}</span>
+            <span style="color:var(--gray-5);margin:0 4px">=</span>
+            <span style="font-weight:700;color:var(--gray-6)">${clp(rfpTotalCLP)}</span>
+            <span style="font-size:10px;color:var(--gray-4);margin-left:3px">IVA incl.</span>
+          </div>
+          <div style="padding:5px 10px;border-radius:5px;background:#fff4ce;border:1px solid #f7ca7a;font-size:11px;">
+            <span style="color:var(--orange)">1 UTM = <strong>${clp(getUtmRate())}</strong></span>
+          </div>
+        </div>
+      </div>`;
+
+    // Escenarios con licencias absorbidas en Ítem 8
+    const _c8  = calcItemCosts('i8');
+    const _b1r = S.items.filter(it=>!it.optional && it.id!=='i8')
+                        .reduce((a,it)=>{const c=calcItemCosts(it.id);return a+c.revenue;},0)
+                 + _c8.revenue + ltGross;
+    const _b1c = S.items.filter(it=>!it.optional && it.id!=='i8')
+                        .reduce((a,it)=>{const c=calcItemCosts(it.id);return a+c.cost;},0)
+                 + _c8.cost + lt.cost;
+    const _b1imp = calcImponderableImpactOn(ctBase.revenue, _b1r);
+    const _b1net = (_b1r - _b1c) - _b1imp;
+    const _b1pct = _b1r > 0 ? _b1net / _b1r * 100 : 0;
+    const _b12r  = _b1r + ctOpt.revenue;
+    const _b12c  = _b1c + ctOpt.cost;
+    const _b12imp= calcImponderableImpactOn(ctBase.revenue+ctOpt.revenue, _b12r);
+    const _b12net= (_b12r - _b12c) - _b12imp;
+    const _b12pct= _b12r > 0 ? _b12net / _b12r * 100 : 0;
+
+    scBar.innerHTML =
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;width:100%">' +
+        '<div style="font-size:11px;font-weight:600;color:var(--gray-5);align-self:center;min-width:80px">Escenarios:</div>' +
+        mkCard('Bloque 1 — Solo Base', _b1r, _b1net, _b1pct, !incOpt) +
+        mkCard('Bloque 1+2 — Completo', _b12r, _b12net, _b12pct, incOpt) +
+      '</div>' + rfpRef;
+  }
+
+  const pnlBody = document.getElementById('pnl-body');
+  const optDimStyle = !incOpt ? 'opacity:0.45' : '';
+
+  // ── Ítem 8 = servicio consultoría + licencias Microsoft + Azure (IVA incluido) ──
+  // Las licencias NO están en calcItemCosts para no romper imponderables/header.
+  // Se suman aquí sólo para la vista P&L.
+  const _i8srv  = calcItemCosts('i8');            // sólo consultoría (od)
+  const _lic    = calcLicenseTotalsRaw();          // licencias reales
+  const _ltGros = _lic.revenue * (1 + getIvaRate()/100);
+  const _i8Cost = _i8srv.cost + _lic.cost;
+  const _i8Rev  = _i8srv.revenue + _ltGros;
+  const _i8Mrg$ = _i8Rev - _i8Cost;
+  const _i8MrgP = _i8Rev > 0 ? _i8Mrg$/_i8Rev*100 : 0;
+  // Subtotales Bloque 1 con i8 aumentado (reemplaza ctBase que sólo tiene consultoría)
+  const _b1Cost = (ctBase.cost - _i8srv.cost) + _i8Cost;   // resto base + i8 total
+  const _b1Rev  = (ctBase.revenue - _i8srv.revenue) + _i8Rev;
+  const _b1Mrg$ = _b1Rev - _b1Cost;
+  const _b1MrgP = _b1Rev > 0 ? _b1Mrg$/_b1Rev*100 : 0;
+  // Grand total P&L (= effTotalClientPrice original: ctEff + ltGross, sin doble conteo)
+  const _gtCost = (ctEff.cost - _i8srv.cost) + _i8Cost;
+  const _gtRev  = (ctEff.revenue - _i8srv.revenue) + _i8Rev;
+  const _gtMrg$ = _gtRev - _gtCost;
+  const _gtMrgP = _gtRev > 0 ? _gtMrg$/_gtRev*100 : 0;
+
+  // Licenciamiento desglosado para Ítem 8 expandible
+  const _fx     = S.exchangeRate || 950;
+  const _msft   = S.licenses.filter(l => l.group === 'microsoft' && l.active);
+  const _azure  = S.licenses.filter(l => l.group === 'azure'     && l.active);
+  const _msftCost = _msft.reduce((a,l)  => a + licRowCalc(l,_fx).costCLPTotal, 0);
+  const _msftRev  = _msft.reduce((a,l)  => a + licRowCalc(l,_fx).revCLPTotal,  0);
+  const _msftRevG = gross(_msftRev);
+  const _azCost   = _azure.reduce((a,l) => a + licRowCalc(l,_fx).costCLPTotal, 0);
+  const _azRev    = _azure.reduce((a,l) => a + licRowCalc(l,_fx).revCLPTotal,  0);
+  const _azRevG   = gross(_azRev);
+  // Unitario Ítem 8 (base 400 usuarios) para referencia en Bloque 2
+  const _i8BaseUsers = 400;
+  const _i8CostUnit = _i8Cost > 0 ? Math.round(_i8Cost / _i8BaseUsers) : 0;
+  const _i8RevUnit  = _i8Rev  > 0 ? Math.round(_i8Rev  / _i8BaseUsers) : 0;
+
+  pnlBody.innerHTML = `
+    <!-- BLOQUE 1: PRESUPUESTO BASE -->
+    <tr style="background:#f0f4f8;">
+      <td colspan="6" style="padding:5px 10px;font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;">
+        🖥️ Bloque 1 — Contrato Base 41.834 UTM · Ítems 1, 2, 3, 4, 5, 7, 8
+        <span style="font-size:10px;background:var(--blue);color:white;padding:1px 7px;border-radius:8px;margin-left:6px;">Obligatorio</span>
+        <span style="font-size:10px;color:var(--gray-4);margin-left:6px;font-style:italic;">Ítem 8 = 400 usuarios base × 48 m, licencias absorbidas en unitario — haz clic para expandir</span>
+      </td>
+    </tr>
+    ${[...S.items.filter(it=>!it.optional && it.id!=='i8')].sort((a,b)=>{const o=['i1','i2','i3','i4','i5','i7'];return o.indexOf(a.id)-o.indexOf(b.id);}).map(it=>{
+      const fc = FASE_CONFIG[it.fase]||{color:'#343a40'};
+      const c  = calcItemCosts(it.id);
+      const azureNote = it.id==='i1' ? `<span style="font-size:10px;background:#e6f2fb;color:#0078d4;border:1px solid #b3d9f0;padding:1px 6px;border-radius:8px;margin-left:6px;">☁️ Azure setup inicial incluido</span>` : '';
+      return `<tr style="border-left:3px solid ${fc.color}">
+        <td style="padding-left:20px;font-size:12px">
+          <span style="font-size:10px;font-weight:700;color:${fc.color};margin-right:4px">${itemNumLabel(it.id)}</span>
+          <span style="color:var(--gray-4);font-size:10px;margin-right:4px">${it.fase}</span>${it.name}${azureNote}
+        </td>
+        <td class="right" style="font-size:12px">${c.cost>0?clp(c.cost):'—'}</td>
+        <td class="right" style="font-size:12px">${c.revenue>0?clp(c.revenue):'—'}</td>
+        <td class="right" style="font-size:12px;background:#f4fbf4;color:#2b7a3c">${c.revenue>0?uf(c.revenue):'—'}</td>
+        <td class="right" style="font-size:12px">${c.revenue>0?clp(c.margin$):'—'}</td>
+        <td class="right">${c.revenue>0?badgeMargin(c.marginPct):'—'}</td>
+      </tr>`;
+    }).join('')}
+    <!-- Ítem 8: fila combinada consultoría + licencias, expandible -->
+    <tr style="border-left:3px solid #0078d4;background:#f0f7ff;cursor:pointer;"
+        onclick="togglePnlI8Detail()">
+      <td style="padding-left:20px;font-size:12px">
+        <span id="pnl-i8-toggle" style="font-size:10px;color:#0078d4;margin-right:4px;user-select:none;">▶</span>
+        <span style="font-size:10px;font-weight:700;color:#0078d4;margin-right:4px">Ítem 8</span>
+        <strong>Activación y mantención — 400 usuarios base × 48 meses</strong>
+        <span style="font-size:10px;background:#0078d4;color:white;padding:1px 7px;border-radius:8px;margin-left:6px;">🔑 Lic. Microsoft + Azure absorbidas en unitario</span>
+        <span style="font-size:10px;background:#fff4ce;color:var(--orange);border:1px solid #f7ca7a;padding:1px 6px;border-radius:8px;margin-left:4px;">IVA ${getIvaRate()}% incluido</span>
+      </td>
+      <td class="right" style="font-size:12px;font-weight:700">${clp(_i8Cost)}</td>
+      <td class="right" style="font-size:12px;font-weight:700">${clp(_i8Rev)}</td>
+      <td class="right" style="font-size:12px;background:#f4fbf4;color:#2b7a3c;font-weight:600">${uf(_i8Rev)}</td>
+      <td class="right" style="font-size:12px;font-weight:700">${clp(_i8Mrg$)}</td>
+      <td class="right">${badgeMargin(_i8MrgP)}</td>
+    </tr>
+    <!-- Detalle expandible Ítem 8 -->
+    <tr id="pnl-i8-detail" style="display:none">
+      <td colspan="6" style="padding:0;background:#f8fbff;border-left:3px solid #0078d4;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#e6f2fb;">
+              <th style="padding:6px 8px 6px 36px;text-align:left;font-size:11px;color:var(--blue-dark)">Componente</th>
+              <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-5)">Costo</th>
+              <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-5)">Precio al Cliente</th>
+              <th style="padding:6px 8px;text-align:right;font-size:11px;color:#2b7a3c;background:#f0fbf0">UF</th>
+              <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-5)">Margen $</th>
+              <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-5)">Margen %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-left:4px solid #0078d4;">
+              <td style="padding:7px 8px 7px 36px">
+                🏢 <strong>Licenciamiento Microsoft</strong>
+                <span style="font-size:10px;color:var(--gray-4);margin-left:4px;">Dynamics 365 + Power Platform + Copilot · 48 meses</span>
+              </td>
+              <td style="padding:7px 8px;text-align:right">${clp(_msftCost)}</td>
+              <td style="padding:7px 8px;text-align:right;font-weight:600;color:var(--blue)">${clp(_msftRevG)}</td>
+              <td style="padding:7px 8px;text-align:right;background:#f0fbf0;color:#2b7a3c;font-weight:600">${uf(_msftRevG)}</td>
+              <td style="padding:7px 8px;text-align:right">${clp(_msftRevG - _msftCost)}</td>
+              <td style="padding:7px 8px;text-align:right">${badgeMargin(_msftRevG>0?(_msftRevG-_msftCost)/_msftRevG*100:0)}</td>
+            </tr>
+            <tr style="border-left:4px solid #0089d6;">
+              <td style="padding:7px 8px 7px 36px">
+                ☁️ <strong>Licenciamiento Azure</strong>
+                <span style="font-size:10px;color:var(--gray-4);margin-left:4px;">Services 3 ambientes dev/test/prod · 48 meses</span>
+              </td>
+              <td style="padding:7px 8px;text-align:right">${clp(_azCost)}</td>
+              <td style="padding:7px 8px;text-align:right;font-weight:600;color:#0089d6">${clp(_azRevG)}</td>
+              <td style="padding:7px 8px;text-align:right;background:#f0fbf0;color:#2b7a3c;font-weight:600">${uf(_azRevG)}</td>
+              <td style="padding:7px 8px;text-align:right">${clp(_azRevG - _azCost)}</td>
+              <td style="padding:7px 8px;text-align:right">${badgeMargin(_azRevG>0?(_azRevG-_azCost)/_azRevG*100:0)}</td>
+            </tr>
+            <tr style="border-left:4px solid #8764b8;border-bottom:1px solid var(--gray-2);">
+              <td style="padding:7px 8px 7px 36px">
+                👤 <strong>Activación y mantención de Usuarios</strong>
+                <span style="font-size:10px;color:var(--gray-4);margin-left:4px;">Consultoría On-Demand · ${_i8srv.totalHrs} hrs · sin IVA</span>
+              </td>
+              <td style="padding:7px 8px;text-align:right">${clp(_i8srv.cost)}</td>
+              <td style="padding:7px 8px;text-align:right;font-weight:600;color:#8764b8">${clp(_i8srv.revenue)}</td>
+              <td style="padding:7px 8px;text-align:right;background:#f0fbf0;color:#2b7a3c;font-weight:600">${uf(_i8srv.revenue)}</td>
+              <td style="padding:7px 8px;text-align:right">${clp(_i8srv.margin$)}</td>
+              <td style="padding:7px 8px;text-align:right">${badgeMargin(_i8srv.marginPct)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr class="subtotal-row">
+      <td style="padding-left:20px">Subtotal Bloque 1 — Contrato Base (Ítems 1–7 + Ítem 8 con licencias absorbidas)</td>
+      <td class="right">${clp(_b1Cost)}</td>
+      <td class="right">${clp(_b1Rev)}</td>
+      <td class="right">${uf(_b1Rev)}</td>
+      <td class="right">${clp(_b1Mrg$)}</td>
+      <td class="right">${badgeMargin(_b1MrgP)}</td>
+    </tr>
+
+    <!-- BLOQUE 2: POOL EVOLUTIVO -->
+    <tr style="background:${incOpt?'#f5f0ff':'#f8f9fa'}">
+      <td colspan="6" style="padding:5px 10px;font-size:11px;font-weight:700;color:${incOpt?'#8764b8':'var(--gray-4)'};text-transform:uppercase;letter-spacing:.4px;">
+        🔄 Bloque 2 — Pool Evolutivo 26.545 UTM · Ítem 6 (Sprints) · Ítem 8 (Usuarios adicionales)
+        <span style="font-size:10px;background:${incOpt?'#8764b8':'var(--gray-3)'};color:${incOpt?'white':'var(--gray-5)'};padding:1px 7px;border-radius:8px;margin-left:6px;">
+          ${incOpt?'Incluido en análisis':'Excluido del análisis'}
+        </span>
+        <span style="font-size:10px;color:${incOpt?'#8764b8':'var(--gray-4)'};margin-left:8px;font-style:italic;">
+          On-demand · Ítem 8 mismo unitario que Bloque 1 · A.14.5
+        </span>
+        <span style="font-size:10px;color:var(--gray-4);margin-left:8px;font-style:italic;">— Toggle ↗</span>
+      </td>
+    </tr>
+    ${[...S.items.filter(it=>!!it.optional)].sort((a,b)=>{const o=['i6','i8'];return o.indexOf(a.id)-o.indexOf(b.id);}).map(it=>{
+      const c = calcItemCosts(it.id);
+      const i8extra = it.id==='i8' ? `<span style="font-size:10px;background:#ede8f8;color:#8764b8;border:1px solid #c9b8e8;padding:1px 6px;border-radius:8px;margin-left:6px;">Usuarios adicionales &gt;400 · mismo unitario Bloque 1 (${clp(_i8RevUnit)}/usr)</span>` : '';
+      return `<tr style="border-left:3px solid #8764b8;${optDimStyle}">
+        <td style="padding-left:20px;font-size:12px">
+          <span style="font-size:10px;font-weight:700;color:#8764b8;margin-right:4px">${itemNumLabel(it.id)}</span>
+          <span style="color:var(--gray-4);font-size:10px;margin-right:4px">${it.fase}</span>${it.name}${i8extra}
+          <span style="font-size:10px;color:#8764b8;margin-left:4px;">(opcional)</span>
+        </td>
+        <td class="right" style="font-size:12px;${optDimStyle}">${c.cost>0?clp(c.cost):'—'}</td>
+        <td class="right" style="font-size:12px;${optDimStyle}">${c.revenue>0?clp(c.revenue):'—'}</td>
+        <td class="right" style="font-size:12px;background:${incOpt?'#f5f0ff':'#f8f9fa'};color:${incOpt?'#8764b8':'var(--gray-4)'}">${c.revenue>0?uf(c.revenue):'—'}</td>
+        <td class="right" style="font-size:12px;${optDimStyle}">${c.revenue>0?clp(c.margin$):'—'}</td>
+        <td class="right" style="${optDimStyle}">${c.revenue>0?badgeMargin(c.marginPct):'—'}</td>
+      </tr>`;
+    }).join('')}
+    <tr style="background:${incOpt?'#ede8f8':'#f8f9fa'};${optDimStyle}">
+      <td style="padding-left:20px;font-weight:600;color:${incOpt?'#8764b8':'var(--gray-4)'}">Subtotal Bloque 2 — Pool Evolutivo</td>
+      <td class="right" style="color:${incOpt?'#8764b8':'var(--gray-4)'}">${clp(ctOpt.cost)}</td>
+      <td class="right" style="color:${incOpt?'#8764b8':'var(--gray-4)'}">${clp(ctOpt.revenue)}</td>
+      <td class="right" style="color:${incOpt?'#8764b8':'var(--gray-4)'}">${uf(ctOpt.revenue)}</td>
+      <td class="right" style="color:${incOpt?'#8764b8':'var(--gray-4)'}">${clp(ctOpt.margin$)}</td>
+      <td class="right">${ctOpt.revenue>0?badgeMargin(ctOpt.marginPct):'—'}</td>
+    </tr>
+
+    <!-- Separador -->
+    <tr><td colspan="6" style="padding:4px;background:var(--gray-2)"></td></tr>
+
+    <!-- Grand total P&L: i8 aumentado + resto base + pool (sin línea separada de licencias) -->
+    <tr class="subtotal-row">
+      <td>Subtotal Bruto al Cliente ${incOpt?'(Bloque 1 + Bloque 2)':'(solo Bloque 1 — sin pool)'}</td>
+      <td class="right">${clp(_gtCost)}</td>
+      <td class="right">${clp(_gtRev)}</td>
+      <td class="right">${uf(_gtRev)}</td>
+      <td class="right">${clp(_gtMrg$)}</td>
+      <td class="right">${badgeMargin(_gtMrgP)}</td>
+    </tr>
+    <tr>
+      <td style="color:var(--red)">⚠️ − Imponderables y otros riesgos</td>
+      <td class="right">—</td><td class="right">—</td><td class="right">—</td>
+      <td class="right" style="color:var(--red)">−${clp(effImpact)}</td>
+      <td class="right" style="color:var(--red)">−${pct(_gtRev>0?effImpact/_gtRev*100:0)}</td>
+    </tr>
+    <tr class="total-row">
+      <td>MARGEN NETO ESTIMADO ${incOpt?'':'(escenario base)'}</td>
+      <td class="right">${clp(_gtCost)}</td>
+      <td class="right">${clp(_gtRev)}</td>
+      <td class="right">${uf(_gtRev)}</td>
+      <td class="right">${clp(_gtMrg$ - effImpact)}</td>
+      <td class="right">${pct(_gtRev>0?(_gtMrg$-effImpact)/_gtRev*100:0)}</td>
+    </tr>
+  `;
+
+  // Chart
+  renderDistChart(ct, lt);
+
+  // Header
+  updateHeader(totalRev, grossMarginPct, netMarginPct);
+}
+
+// ═══════════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════════
+let distChart = null;
+let impChart = null;
+
+function renderDistChart(ct, lt) {
+  const ctx = document.getElementById('chartDist');
+  if (!ctx) return;
+  const labels = S.items.map(it => it.name.length > 22 ? it.name.substring(0,20)+'…' : it.name);
+  labels.push('Licenciamiento');
+  const data = S.items.map(it => Math.round(calcItemCosts(it.id).revenue));
+  data.push(Math.round(lt.revenue));
+  const colors = ['#0078d4','#2b7a3c','#8764b8','#d83b01','#107c6e','#986f0b','#c43e1c','#4a5e8a','#005a9e'];
+
+  if (distChart) { distChart.destroy(); distChart = null; }
+  distChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: 'white' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${clp(ctx.raw)} (${(ctx.raw/ctx.dataset.data.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)` } }
+      }
+    }
+  });
+}
+
+function renderImpChart(impData, grossMargin) {
+  const ctx = document.getElementById('chartImp');
+  if (!ctx) return;
+  const enabled = impData.filter(d => d.impact > 0);
+  const totalImp = enabled.reduce((a,d) => a+d.impact, 0);
+  const netMargin = grossMargin - totalImp;
+
+  if (impChart) { impChart.destroy(); impChart = null; }
+  impChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Margen Bruto', ...enabled.map(d => d.name.length>18?d.name.substring(0,16)+'…':d.name), 'Margen Neto'],
+      datasets: [{
+        data: [grossMargin, ...enabled.map(d => -d.impact), netMargin],
+        backgroundColor: ['#107c10', ...enabled.map(() => '#d13438'), '#0078d4'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + clp(Math.abs(ctx.raw)) } } },
+      scales: { y: { ticks: { callback: v => clp(v) } } }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  HEADER UPDATE
+// ═══════════════════════════════════════════════════
+function updateHeader(totalRev, grossPct, netPct) {
+  const fmt = n => {
+    if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+    return clp(n);
+  };
+  document.getElementById('hdr-total').textContent = fmt(totalRev);
+  const hm = document.getElementById('hdr-margin');
+  hm.textContent = pct(grossPct);
+  hm.className = 'hm-value ' + (grossPct>=30?'green':grossPct>=15?'orange':'red');
+  const hn = document.getElementById('hdr-net');
+  hn.textContent = pct(netPct);
+  hn.className = 'hm-value ' + (netPct>=20?'green':netPct>=10?'orange':'red');
+}
+
+// ═══════════════════════════════════════════════════
+//  MAIN RECALC
+// ═══════════════════════════════════════════════════
+function recalcAll() {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (!activeTab) return;
+  const id = activeTab.id.replace('tab-','');
+  if (id === 'resumen') renderResumen();
+  else if (id === 'perfiles') renderProfiles();
+  else if (id === 'items') renderItems();
+  else if (id === 'equalizador') renderEqualizador();
+  else if (id === 'licencias') renderLicenses();
+  else if (id === 'imponderables') renderImponderables();
+  else if (id === 'gantt') renderGantt();
+
+  // Always update header — consultoría neto + licencias c/IVA
+  const ct = calcConsultingTotals();
+  const lt = calcLicenseTotals();
+  const totalClientRev = ct.revenue + gross(lt.revenue); // consultoría sin IVA + licencias con IVA
+  const totalRev       = ct.revenue + lt.revenue;        // base para margen %
+  const grossMargin$   = ct.margin$ + lt.margin$;
+  const grossPct  = totalRev > 0 ? grossMargin$/totalRev*100 : 0;
+  const impImpact = calcImponderableImpact();
+  const netMargin$ = grossMargin$ - impImpact;
+  const netPct = totalRev > 0 ? netMargin$/totalRev*100 : 0;
+  updateHeader(totalClientRev, grossPct, netPct);
+
+  // Save to localStorage
+  try { localStorage.setItem('mlc_state', JSON.stringify({ v:16, municipalityBudgetUF: S.municipalityBudgetUF, competitiveDiscount: S.competitiveDiscount, utmRate: S.utmRate, includeOptional: S.includeOptional, hours: S.hours, profiles: S.profiles, licenses: S.licenses, imponderables: S.imponderables, targetBudget: S.targetBudget, exchangeRate: S.exchangeRate, ufRate: S.ufRate })); } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════
+//  SYNC UF-LINKED PROFILES (On-Demand: 0.7 / 1.2 UF/hr)
+//  Se llama cada vez que cambia el valor de la UF
+// ═══════════════════════════════════════════════════
+function syncUfLinkedProfiles() {
+  const rate = getUfRate();
+  S.profiles.forEach(p => {
+    if (!p.ufLinked) return;
+    p.costRate = Math.round(p.ufCost * rate);
+    p.billRate = Math.round(p.ufBill * rate);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  SYNC EXCHANGE RATE (from global bar to licencias tab)
+// ═══════════════════════════════════════════════════
+function syncExchangeRate(val) {
+  S.exchangeRate = Number(val) || 950;
+  const local = document.getElementById('exchange-rate');
+  if (local) local.value = S.exchangeRate;
+  recalcAll();
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  // Load from localStorage (only if version matches)
+  try {
+    const saved = localStorage.getItem('mlc_state');
+    if (saved) {
+      const d = JSON.parse(saved);
+      if (d.v === 16) {
+        if (d.includeOptional !== undefined) S.includeOptional = d.includeOptional;
+        if (d.municipalityBudgetUF !== undefined) S.municipalityBudgetUF = d.municipalityBudgetUF;
+        if (d.competitiveDiscount  !== undefined) S.competitiveDiscount  = d.competitiveDiscount;
+        if (d.utmRate              !== undefined) S.utmRate              = d.utmRate;
+        if (d.ivaRate !== undefined) S.ivaRate = d.ivaRate;
+        if (d.hours) S.hours = d.hours;
+        if (d.profiles) d.profiles.forEach(sp => { const p = S.profiles.find(x=>x.id===sp.id); if(p){p.costRate=sp.costRate;p.billRate=sp.billRate;} });
+        if (d.licenses) S.licenses = d.licenses;
+        if (d.imponderables) d.imponderables.forEach(si => {
+          const imp = S.imponderables.find(x=>x.id===si.id);
+          if (imp) {
+            imp.enabled = si.enabled;
+            if (si.rate !== undefined)       imp.rate       = si.rate;
+            if (si.amount_uf !== undefined)  imp.amount_uf  = si.amount_uf;
+            if (si.amount_clp !== undefined) imp.amount_clp = si.amount_clp;
+          }
+        });
+        if (d.targetBudget) S.targetBudget = d.targetBudget;
+        if (d.exchangeRate) S.exchangeRate = d.exchangeRate;
+        if (d.ufRate) S.ufRate = d.ufRate;
+      } else {
+        // Old version — clear and start fresh with new defaults
+        localStorage.removeItem('mlc_state');
+      }
+    }
+  } catch(e) {}
+
+  // Set global config bar
+  const ufInput = document.getElementById('uf-rate');
+  if (ufInput) ufInput.value = S.ufRate || 40000;
+  const ivaInput = document.getElementById('iva-rate');
+  if (ivaInput) ivaInput.value = S.ivaRate ?? 19;
+  const togOpt = document.getElementById('toggle-optional');
+  if (togOpt) togOpt.checked = S.includeOptional ?? true;
+  const utmInput = document.getElementById('utm-rate');
+  if (utmInput) utmInput.value = S.utmRate || 68000;
+  // Si no hay presupuesto guardado, usar el total RFP convertido a UF
+  if (!S.municipalityBudgetUF) {
+    S.municipalityBudgetUF = utmToUF(S.rfp.totalUTM);
+  }
+  const muniInput = document.getElementById('municipality-budget-uf');
+  if (muniInput) muniInput.value = S.municipalityBudgetUF.toFixed(1);
+  const discInput = document.getElementById('competitive-discount');
+  if (discInput) discInput.value = S.competitiveDiscount ?? 13;
+  const fxGlobal = document.getElementById('exchange-rate-global');
+  if (fxGlobal) fxGlobal.value = S.exchangeRate || 950;
+  // Sync local exchange-rate input in licencias tab
+  const fxLocal = document.getElementById('exchange-rate');
+  if (fxLocal) fxLocal.value = S.exchangeRate || 950;
+
+  // Set target budget
+  const tbInput = document.getElementById('target-budget');
+  if (tbInput) tbInput.value = S.targetBudget || 0;
+  const tbUfInput = document.getElementById('target-budget-uf');
+  if (tbUfInput && S.targetBudget > 0) tbUfInput.value = (S.targetBudget / (S.ufRate||40000)).toFixed(2);
+
+  // Update global UF info
+  const infoEl = document.getElementById('global-uf-info');
+  if (infoEl) infoEl.textContent = `Referencia: 1.000 UF = ${clp(1000*(S.ufRate||40000))}`;
+
+  syncUfLinkedProfiles();   // Inicializar tarifas On-Demand según UF vigente
+  renderResumen();
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER: GANTT — Plan de Implementación
+//  Cabecera: meses (fila 1) + semanas (fila 2)
+//  Después 180 dh: zona "Años" para sprints y soporte
+// ═══════════════════════════════════════════════════
+function renderGantt() {
+  const el = document.getElementById('gantt-container');
+  if (!el) return;
+
+  // ── Escala ──────────────────────────────────────────────────────────────
+  // Zona 1 — Implementación: 36 semanas = 180 días hábiles (máx contrato)
+  // Zona 2 — Operación: 4 años (48 meses de soporte)
+  const IMPL_W   = 36;     // semanas zona implementación
+  const OP_YEARS = 4;      // años zona operación
+  const CW       = 22;     // px por semana (implementación)
+  const YW       = 110;    // px por año (operación)
+  const LABEL_W  = 292;
+  const HDR_H    = 52;     // cabecera 2 filas x 26px
+  const ROW_H    = 36;
+
+  // Helper: columna → posición X
+  // col 0-36 = semanas; col 37-40 = Y1-Y4
+  const px = c => c <= IMPL_W
+    ? LABEL_W + c * CW
+    : LABEL_W + IMPL_W * CW + (c - IMPL_W) * YW;
+
+  const CHART_W = IMPL_W * CW + OP_YEARS * YW;
+  const TOTAL_W = LABEL_W + CHART_W;
+
+  // ── Fases (s/e en columnas: 0-35=semanas, 36-39=años) ──────────────────
+  const phases = [
+    { id:'kick', label:'Kickoff & Arquitectura de Solución', s:0,  e:2,  color:'#343a40', tipo:'prep',
+      detail:'Onboarding, definición de arquitectura, setup 3 ambientes (dev/test/prod), accesos a API Gateway, EntraID, GovAPIs.' },
+    { id:'f1',   label:'Fase 1 — CRM Base + Subsidios',      s:0,  e:8,  color:'#0078d4', tipo:'fase',
+      detail:'CRM base, flujo Subsidios, 400 usuarios. Integraciones: ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway (6 maestros). Migración ≥1 año. Máx 40 dh.' },
+    { id:'f1a',  label:'  ↳ Diseño CRM + Configuración',     s:0,  e:5,  color:'#2196f3', tipo:'sub',
+      detail:'Modelado de datos ciudadano, flujos de trabajo, Portal Vecino, RBAC y perfiles.' },
+    { id:'f1b',  label:'  ↳ Integraciones Fase 1 (9 APIs)',  s:1,  e:7,  color:'#2196f3', tipo:'sub',
+      detail:'ClaveÚnica, EntraID JIT, SGD, ERP Proexsi (SOAP), Tarjeta Vecino, PISEE 2, API Gateway.' },
+    { id:'f1c',  label:'  ↳ UAT + Capacitación + Go-Live',   s:6,  e:8,  color:'#2196f3', tipo:'sub',
+      detail:'UAT con usuarios clave, capacitación funcionales y TI, Go-Live Big Bang 400 usuarios.' },
+    { id:'m1',   label:'🚀 Go-Live Fase 1 — 400 usuarios',   s:8,  e:8,  color:'#0078d4', tipo:'milestone',
+      detail:'CRM operativo con 400 usuarios. Subsidios activos. Integraciones Fase 1 en producción. Máx S8 (40 dh).' },
+    { id:'f2',   label:'Fase 2 — Subvenciones (PYJ)',         s:4,  e:18, color:'#2b7a3c', tipo:'fase',
+      detail:'Subvenciones municipales. Datos financieros y beneficiarios. Trazabilidad auditada. Migración ≥1 año. ERP Proexsi. (+30% holgura: 14 sem)' },
+    { id:'f3',   label:'Fase 3 — Permiso de Circulación',    s:4,  e:26, color:'#8764b8', tipo:'fase',
+      detail:'~130.000 pagos/período. MTT + CONASET (F8) + AACH + ERP Proexsi SOAP. Mayor complejidad. (+30% holgura: 22 sem)' },
+    { id:'f4',   label:'Fase 4 — Veterinaria Municipal',      s:6,  e:18, color:'#d83b01', tipo:'fase',
+      detail:'Certificados vacunas/microchip/recetas por CRM. Exámenes médicos. ClaveÚnica. (+30% holgura: 12 sem)' },
+    { id:'f5',   label:'Fase 5 — Talleres (Mod. N°1)',        s:6,  e:18, color:'#107c6e', tipo:'fase',
+      detail:'Inscripción talleres comunitarios/JJ.VV. Tarjeta Vecino, gestión cupos. Mod. N°1. (+30% holgura: 12 sem)' },
+    { id:'m2',   label:'✅ Go-Live Fases 2, 4 y 5',          s:18, e:18, color:'#2b7a3c', tipo:'milestone',
+      detail:'Subvenciones, Veterinaria y Talleres en producción. S18 = 90 dh. Buffer 90 dh hasta límite 180.' },
+    { id:'m3',   label:'✅ Go-Live Fase 3 — Permiso Circ.',  s:26, e:26, color:'#8764b8', tipo:'milestone',
+      detail:'Permiso de Circulación en producción. S26 = 130 dh < máx 180. Buffer: 50 dh (10 semanas).' },
+    // ── Líneas que se extienden a la zona de años (e > IMPL_W) ─────────────
+    { id:'spr',  label:'Sprints Mantenimiento Evolutivo (x25)',s:9, e:40, color:'#986f0b', tipo:'pool',
+      detail:'Pool 26.545 UTM. Máx 25 sprints × 2 semanas. On-demand. Disponible desde Go-Live Fase 1 durante los 4 años de contrato.' },
+    { id:'op',   label:'Operación & Soporte — 48 meses',      s:26, e:40, color:'#5a6472', tipo:'operacion',
+      detail:'Soporte 24/7. SLA S1=15 min. Revisiones trimestrales seguridad y cumplimiento normativo. 48 meses desde Go-Live completo.' },
+  ];
+
+  const totalH = phases.length * ROW_H + HDR_H + 16;
+
+  // ── SVG ──────────────────────────────────────────────────────────────────
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TOTAL_W}" height="${totalH}"
+    style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:block">
+  <defs>
+    <pattern id="wgrid" width="${CW}" height="${ROW_H}" patternUnits="userSpaceOnUse">
+      <path d="M${CW} 0 L${CW} ${ROW_H}" stroke="#e9ecef" stroke-width="0.4"/>
+    </pattern>
+    <pattern id="ystrip" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="20" stroke="#dee2e6" stroke-width="6"/>
+    </pattern>
+  </defs>
+  <rect width="${TOTAL_W}" height="${totalH}" fill="white"/>`;
+
+  // ── Cabecera ─────────────────────────────────────────────────────────────
+  // Fondo etiquetas
+  svg += `<rect x="0" y="0" width="${LABEL_W}" height="${HDR_H}" fill="#f0f4f8"/>`;
+  svg += `<text x="10" y="16" font-size="11" font-weight="700" fill="#343a40">ACTIVIDAD / FASE</text>`;
+  svg += `<text x="10" y="30" font-size="9" fill="#6c757d">ID 2345-55-LR26 · Mod.N°1 · Mod.N°4</text>`;
+  svg += `<text x="10" y="44" font-size="9" fill="#6c757d">1 semana = 5 días hábiles</text>`;
+
+  // Zona implementación — fila 1 (meses) + fila 2 (semanas)
+  const ROW1 = 0, ROW1H = 26, ROW2 = 26, ROW2H = 26;
+  for (let w = 0; w < IMPL_W; w++) {
+    const x = px(w);
+    const isM = w % 4 === 0;
+    const isM40 = w < 8;
+    // Fila 1: meses
+    if (w % 4 === 0) {
+      const mw = 4 * CW;
+      const m = Math.floor(w/4) + 1;
+      svg += `<rect x="${x}" y="${ROW1}" width="${mw}" height="${ROW1H}" fill="${isM40?'#d8ecfb':'#edf2f7'}" stroke="#dee2e6" stroke-width="0.3"/>`;
+      svg += `<text x="${x+mw/2}" y="${ROW1+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${isM40?'#005a9e':'#343a40'}">M${m}</text>`;
+    }
+    // Fila 2: semanas
+    svg += `<rect x="${x}" y="${ROW2}" width="${CW}" height="${ROW2H}" fill="${isM40?'#ebf5fd':'white'}" stroke="#e9ecef" stroke-width="0.3"/>`;
+    if (w % 2 === 0) {
+      svg += `<text x="${x+CW/2}" y="${ROW2+17}" text-anchor="middle" font-size="8" fill="#6c757d">S${w+1}</text>`;
+    }
+  }
+
+  // Zona años — cabecera (meses no aplica, solo "AÑO N")
+  for (let y = 0; y < OP_YEARS; y++) {
+    const x = px(IMPL_W + y);
+    // Fila 1: etiqueta año
+    svg += `<rect x="${x}" y="${ROW1}" width="${YW}" height="${ROW1H}" fill="#e8edf2" stroke="#dee2e6" stroke-width="0.3"/>`;
+    svg += `<text x="${x+YW/2}" y="${ROW1+16}" text-anchor="middle" font-size="11" font-weight="700" fill="#343a40">AÑO ${y+1}</text>`;
+    // Fila 2: meses del año
+    svg += `<rect x="${x}" y="${ROW2}" width="${YW}" height="${ROW2H}" fill="#f0f2f5" stroke="#dee2e6" stroke-width="0.3"/>`;
+    svg += `<text x="${x+YW/2}" y="${ROW2+17}" text-anchor="middle" font-size="9" fill="#6c757d">12 meses</text>`;
+  }
+
+  // Separador cabecera
+  svg += `<line x1="0" y1="${HDR_H}" x2="${TOTAL_W}" y2="${HDR_H}" stroke="#adb5bd" stroke-width="1"/>`;
+  // Constraint label 40 dh
+  svg += `<line x1="${px(8)}" y1="0" x2="${px(8)}" y2="${HDR_H}" stroke="#d13438" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+  svg += `<text x="${px(8)+2}" y="10" font-size="8" font-weight="700" fill="#d13438">40 dh</text>`;
+  // Constraint label 180 dh
+  svg += `<line x1="${px(IMPL_W)}" y1="0" x2="${px(IMPL_W)}" y2="${totalH}" stroke="#d13438" stroke-width="2"/>`;
+  svg += `<text x="${px(IMPL_W)+3}" y="10" font-size="8" font-weight="700" fill="#d13438">180 dh</text>`;
+
+  // ── Fondos de filas + zona años ──────────────────────────────────────────
+  const bodyH = phases.length * ROW_H;
+  // Grid semanas implementación
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${IMPL_W*CW}" height="${bodyH}" fill="url(#wgrid)"/>`;
+  // Zona azul tenue primeras 8 semanas
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${8*CW}" height="${bodyH}" fill="rgba(0,120,212,0.04)"/>`;
+  // Zona años (fondo rayado / diferenciado)
+  svg += `<rect x="${px(IMPL_W)}" y="${HDR_H}" width="${OP_YEARS*YW}" height="${bodyH}" fill="#f5f7fa"/>`;
+  for (let y = 0; y < OP_YEARS; y++) {
+    const x = px(IMPL_W + y);
+    svg += `<line x1="${x}" y1="${HDR_H}" x2="${x}" y2="${HDR_H+bodyH}" stroke="#d0d8e0" stroke-width="0.8"/>`;
+  }
+
+  // ── Filas de actividades ─────────────────────────────────────────────────
+  phases.forEach((ph, i) => {
+    const ry = HDR_H + i * ROW_H;
+    const rowBg = i % 2 === 0 ? 'white' : '#fafbfc';
+    svg += `<rect x="0" y="${ry}" width="${LABEL_W}" height="${ROW_H}" fill="${rowBg}"/>`;
+
+    // Etiqueta
+    const isSub  = ph.tipo === 'sub';
+    const isMile = ph.tipo === 'milestone';
+    svg += `<text x="${isSub?14:6}" y="${ry+ROW_H/2+4}"
+      font-size="${isMile?9:isSub?9:11}"
+      font-weight="${isMile?'700':isSub?'400':'600'}"
+      fill="${isMile?ph.color:'#343a40'}">${ph.label}</text>`;
+
+    // Separador fila
+    svg += `<line x1="0" y1="${ry+ROW_H}" x2="${TOTAL_W}" y2="${ry+ROW_H}" stroke="#e9ecef" stroke-width="0.5"/>`;
+
+    if (ph.tipo === 'milestone') {
+      const mx = px(ph.s); const my = ry + ROW_H/2; const r = 7;
+      svg += `<polygon points="${mx},${my-r} ${mx+r},${my} ${mx},${my+r} ${mx-r},${my}" fill="${ph.color}" opacity="0.92"/>`;
+      svg += `<line x1="${mx}" y1="${HDR_H}" x2="${mx}" y2="${HDR_H+bodyH}" stroke="${ph.color}" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
+    } else {
+      const bx = px(ph.s) + 1;
+      const endX = px(ph.e) - 1;
+      const bw = endX - bx;
+      const bh = ph.tipo === 'sub' ? ROW_H*0.44 : ROW_H*0.60;
+      const by2 = ry + (ROW_H - bh)/2;
+      const rx2 = 3;
+
+      // Para barras que cruzan la línea de 180 dh: dos segmentos
+      if (ph.e > IMPL_W) {
+        // Segmento implementación (hasta 180 dh)
+        const midX = px(IMPL_W) - 1;
+        if (ph.s < IMPL_W) {
+          const w1 = midX - bx;
+          svg += `<rect x="${bx}" y="${by2}" width="${w1}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.85"/>`;
+        }
+        // Segmento años (después 180 dh) — más transparente y con texto "AÑOS"
+        const ax = px(IMPL_W) + 2;
+        const aw = endX - ax;
+        svg += `<rect x="${ax}" y="${by2}" width="${aw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.45"/>`;
+        // Flechas de continuación
+        svg += `<text x="${ax+aw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="${ph.color}" font-weight="700" opacity="0.9">► ${OP_YEARS} años</text>`;
+      } else {
+        svg += `<rect x="${bx}" y="${by2}" width="${bw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="${ph.tipo==='sub'?0.55:0.85}"/>`;
+        if (bw > 35) {
+          svg += `<text x="${bx+bw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="white" font-weight="600">${ph.e-ph.s}s</text>`;
+        }
+      }
+    }
+  });
+
+  // Línea INICIO y línea 180dh (sobre filas)
+  svg += `<line x1="${LABEL_W}" y1="${HDR_H}" x2="${LABEL_W}" y2="${HDR_H+bodyH}" stroke="#107c10" stroke-width="2"/>`;
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="36" height="14" rx="3" fill="#107c10"/>`;
+  svg += `<text x="${LABEL_W+18}" y="${HDR_H+10}" text-anchor="middle" font-size="8" fill="white" font-weight="700">INICIO</text>`;
+  svg += `<line x1="${px(IMPL_W)}" y1="${HDR_H}" x2="${px(IMPL_W)}" y2="${HDR_H+bodyH}" stroke="#d13438" stroke-width="2"/>`;
+
+  svg += '</svg>';
+
+  // ── Tabla detalle ────────────────────────────────────────────────────────
+  const rows = phases.filter(p => p.tipo !== 'sub').map(ph => {
+    const durW  = ph.e <= IMPL_W ? `${ph.e-ph.s} sem` : `${ph.e <= IMPL_W ? ph.e-ph.s : IMPL_W-ph.s} sem + ${OP_YEARS} años`;
+    const durDH = ph.tipo==='milestone' ? '—' : ph.e<=IMPL_W ? `~${(ph.e-ph.s)*5} dh` : `~${(IMPL_W-ph.s)*5} dh + 48 meses`;
+    const tipo = {prep:'Preparación',fase:'Implementación',milestone:'Hito',pool:'Pool Evolutivo',operacion:'Operación'}[ph.tipo]||ph.tipo;
+    return `<tr>
+      <td style="padding:7px 10px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${ph.color};margin-right:6px;vertical-align:middle"></span><strong>${ph.label}</strong></td>
+      <td style="padding:7px 10px;color:var(--gray-5);font-size:12px">${tipo}</td>
+      <td style="padding:7px 10px;font-size:12px;white-space:nowrap">S${ph.s+1}${ph.tipo!=='milestone'?` → ${ph.e>IMPL_W?'Año '+OP_YEARS:'S'+ph.e}`:''}</td>
+      <td style="padding:7px 10px;font-size:12px">${durW} / ${durDH}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--gray-5)">${ph.detail}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="padding:16px 20px">
+      <!-- Alertas RFP -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
+          ⏱️ <strong>Fase 1:</strong> máx <strong style="color:#d13438">40 días hábiles</strong> (8 semanas) · Go-Live Big Bang 400 usuarios
+        </div>
+        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
+          📅 <strong>Total Impl.:</strong> máx <strong style="color:#d13438">180 días hábiles</strong> (36 sem) · fases paralelas (Mod. N°4)
+        </div>
+        <div style="padding:8px 14px;background:#dff6dd;border:1px solid #9ddb9d;border-radius:6px;font-size:12px">
+          ✅ <strong>Propuesta W-it:</strong> implementación completa en <strong style="color:#107c10">~130 dh</strong> (26 sem) · buffer 50 dh disponibles
+        </div>
+        <div style="padding:8px 14px;background:#fff4ce;border:1px solid #f7ca7a;border-radius:6px;font-size:12px">
+          🔄 <strong>Sprints:</strong> 2 sem c/u · máx 25 · desde Go-Live F1 · <strong>Soporte:</strong> 48 meses
+        </div>
+      </div>
+
+      <!-- Gantt SVG -->
+      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:20px">
+        ${svg}
+      </div>
+
+      <!-- Leyenda -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;font-size:12px">
+        ${[['#0078d4','Fase 1 (base)'],['#2b7a3c','Fase 2 Subvenciones'],['#8764b8','Fase 3 Perm. Circ.'],['#d83b01','Fase 4 Veterinaria'],['#107c6e','Fase 5 Talleres'],['#986f0b','Pool Sprints'],['#6c757d','Operación 48m']].map(([c,l])=>`
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="width:14px;height:10px;background:${c};border-radius:2px;display:inline-block"></span>${l}
+          </div>`).join('')}
+      </div>
+
+      <!-- Tabla detalle -->
+      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow:hidden">
+        <div style="padding:12px 16px;background:var(--gray-1);border-bottom:1px solid var(--gray-2)">
+          <strong style="font-size:13px">Detalle por Fase</strong>
+          <span style="font-size:11px;color:var(--gray-5);margin-left:8px">según Bases CRM ID 2345-55-LR26 + Modificaciones 1, 4 + Respuestas foro</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--gray-1)">
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Fase / Hito</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Tipo</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Semanas</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Duración</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Alcance y notas clave (RFP + consultas)</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.addEventListener('DOMContentLoaded', init);
+
+// Update UF info label on uf-rate change
+document.addEventListener('DOMContentLoaded', () => {
+  const ufIn = document.getElementById('uf-rate');
+  if (ufIn) {
+    ufIn.addEventListener('input', () => {
+      const infoEl = document.getElementById('global-uf-info');
+      if (infoEl) infoEl.textContent = `Referencia: 1.000 UF = ${clp(1000*Number(ufIn.value))}`;
+    });
+  }
+});
+</script>
+</body>
+</html>
