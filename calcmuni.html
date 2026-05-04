@@ -2683,3 +2683,273 @@ function renderGantt() {
     'Fase 2':    { color:'#2b7a3c', bg:'#d4f0db', label:'FASE 2 — Implementación Procesos  ·  Ítems 2, 3, 4, 5  ·  fases paralelas (Mod. N°4)' },
     'Operación': { color:'#986f0b', bg:'#fef0ce', label:'OPERACIÓN  ·  Ítems 6 y 7  ·  Soporte 48 meses + Pool Sprints 26.545 UTM' },
   };
+
+  // ── Fases (s/e en columnas: 0-35=semanas, 36-39=años) ──────────────────
+  const phases = [
+    // FASE 1
+    { id:'kick', label:'Kickoff & Arquitectura de Solución', s:0,  e:2,  color:'#343a40', tipo:'prep',      group:'Fase 1',
+      detail:'Onboarding, definición de arquitectura, setup 3 ambientes (dev/test/prod), accesos a API Gateway, EntraID, GovAPIs.' },
+    { id:'f1',   label:'Fase 1 — CRM Base + Subsidios',      s:0,  e:8,  color:'#0078d4', tipo:'fase',      group:'Fase 1',
+      detail:'CRM base, flujo Subsidios, 400 usuarios. Integraciones: ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway (6 maestros). Migración ≥1 año. Máx 40 dh.' },
+    { id:'f1a',  label:'  ↳ Diseño CRM + Configuración',     s:0,  e:5,  color:'#2196f3', tipo:'sub',       group:'Fase 1',
+      detail:'Modelado de datos ciudadano, flujos de trabajo, Portal Vecino, RBAC y perfiles.' },
+    { id:'f1b',  label:'  ↳ Integraciones Fase 1 (9 APIs)',  s:1,  e:7,  color:'#2196f3', tipo:'sub',       group:'Fase 1',
+      detail:'ClaveÚnica, EntraID JIT, SGD, ERP Proexsi (SOAP), Tarjeta Vecino, PISEE 2, API Gateway.' },
+    { id:'f1c',  label:'  ↳ UAT + Capacitación + Go-Live',   s:6,  e:8,  color:'#2196f3', tipo:'sub',       group:'Fase 1',
+      detail:'UAT con usuarios clave, capacitación funcionales y TI, Go-Live Big Bang 400 usuarios.' },
+    { id:'m1',   label:'🚀 Go-Live Fase 1 — 400 usuarios',   s:8,  e:8,  color:'#0078d4', tipo:'milestone', group:'Fase 1',
+      detail:'CRM operativo con 400 usuarios. Subsidios activos. Integraciones Fase 1 en producción. Máx S8 (40 dh).' },
+    // FASE 2 — todos inician S2 (en paralelo con Fase 1 desde semana 2)
+    { id:'f2',   label:'Subvenciones (PYJ)',          s:2,  e:28, color:'#2b7a3c', tipo:'fase',      group:'Fase 2',
+      detail:'Inicio S2 (paralelo a Fase 1). Subvenciones municipales, trazabilidad financiera, migración ≥1 año, ERP Proexsi. Duración: 26 sem = 130 dh.' },
+    { id:'f3',   label:'Permiso de Circulación (DTTP)',s:2,  e:34, color:'#8764b8', tipo:'fase',      group:'Fase 2',
+      detail:'Inicio S2 (paralelo a Fase 1). Mayor complejidad: MTT + CONASET (F8) + AACH + ERP Proexsi SOAP. ~130.000 pagos/período. Duración: 32 sem = 160 dh.' },
+    { id:'f4',   label:'Veterinaria Municipal',        s:2,  e:28, color:'#d83b01', tipo:'fase',      group:'Fase 2',
+      detail:'Inicio S2 (paralelo a Fase 1). Certificados vacunas/microchip/recetas por CRM, exámenes, ClaveÚnica. Duración: 26 sem = 130 dh.' },
+    { id:'f5',   label:'Talleres (Mod. N°1)',           s:2,  e:26, color:'#107c6e', tipo:'fase',      group:'Fase 2',
+      detail:'Inicio S2 (paralelo a Fase 1). Inscripción talleres comunitarios/JJ.VV., Tarjeta Vecino. Mod. N°1. Duración: 24 sem = 120 dh.' },
+    { id:'m2',   label:'✅ Go-Live Subvenciones, Veterinaria y Talleres', s:28, e:28, color:'#2b7a3c', tipo:'milestone', group:'Fase 2',
+      detail:'Ítems 2, 4 y 5 en producción. S28 = 140 dh. Buffer 40 dh hasta límite 180.' },
+    { id:'m3',   label:'✅ Go-Live Permiso de Circulación',               s:34, e:34, color:'#8764b8', tipo:'milestone', group:'Fase 2',
+      detail:'Ítem 3 en producción. S34 = 170 dh < máx 180. Buffer: 2 semanas (10 dh).' },
+    // OPERACIÓN
+    { id:'spr',  label:'Sprints Mantenimiento Evolutivo (x25)',s:9, e:40, color:'#986f0b', tipo:'pool',      group:'Operación',
+      detail:'Pool 26.545 UTM. Máx 25 sprints × 2 semanas. On-demand. Disponible desde Go-Live Fase 1 durante los 4 años de contrato.' },
+    { id:'op',   label:'Operación & Soporte — 48 meses',      s:26, e:40, color:'#5a6472', tipo:'operacion', group:'Operación',
+      detail:'Soporte 24/7. SLA S1=15 min. Revisiones trimestrales seguridad y cumplimiento normativo. 48 meses desde Go-Live completo.' },
+  ];
+
+  const numGroups = new Set(phases.map(p=>p.group)).size;
+  const totalH = phases.length * ROW_H + numGroups * GH + HDR_H + 16;
+
+  // ── SVG ──────────────────────────────────────────────────────────────────
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TOTAL_W}" height="${totalH}"
+    style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:block">
+  <defs>
+    <pattern id="wgrid" width="${CW}" height="${ROW_H}" patternUnits="userSpaceOnUse">
+      <path d="M${CW} 0 L${CW} ${ROW_H}" stroke="#e9ecef" stroke-width="0.4"/>
+    </pattern>
+    <pattern id="ystrip" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="20" stroke="#dee2e6" stroke-width="6"/>
+    </pattern>
+  </defs>
+  <rect width="${TOTAL_W}" height="${totalH}" fill="white"/>`;
+
+  // ── Cabecera ─────────────────────────────────────────────────────────────
+  // Fondo etiquetas
+  svg += `<rect x="0" y="0" width="${LABEL_W}" height="${HDR_H}" fill="#f0f4f8"/>`;
+  svg += `<text x="10" y="16" font-size="11" font-weight="700" fill="#343a40">ACTIVIDAD / FASE</text>`;
+  svg += `<text x="10" y="30" font-size="9" fill="#6c757d">ID 2345-55-LR26 · Mod.N°1 · Mod.N°4</text>`;
+  svg += `<text x="10" y="44" font-size="9" fill="#6c757d">1 semana = 5 días hábiles</text>`;
+
+  // Zona implementación — fila 1 (meses) + fila 2 (semanas)
+  const ROW1 = 0, ROW1H = 26, ROW2 = 26, ROW2H = 26;
+  for (let w = 0; w < IMPL_W; w++) {
+    const x = px(w);
+    const isM = w % 4 === 0;
+    const isM40 = w < 8;
+    // Fila 1: meses
+    if (w % 4 === 0) {
+      const mw = 4 * CW;
+      const m = Math.floor(w/4) + 1;
+      svg += `<rect x="${x}" y="${ROW1}" width="${mw}" height="${ROW1H}" fill="${isM40?'#d8ecfb':'#edf2f7'}" stroke="#dee2e6" stroke-width="0.3"/>`;
+      svg += `<text x="${x+mw/2}" y="${ROW1+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${isM40?'#005a9e':'#343a40'}">M${m}</text>`;
+    }
+    // Fila 2: semanas
+    svg += `<rect x="${x}" y="${ROW2}" width="${CW}" height="${ROW2H}" fill="${isM40?'#ebf5fd':'white'}" stroke="#e9ecef" stroke-width="0.3"/>`;
+    if (w % 2 === 0) {
+      svg += `<text x="${x+CW/2}" y="${ROW2+17}" text-anchor="middle" font-size="8" fill="#6c757d">S${w+1}</text>`;
+    }
+  }
+
+  // Zona años — cabecera (meses no aplica, solo "AÑO N")
+  for (let y = 0; y < OP_YEARS; y++) {
+    const x = px(IMPL_W + y);
+    // Fila 1: etiqueta año
+    svg += `<rect x="${x}" y="${ROW1}" width="${YW}" height="${ROW1H}" fill="#e8edf2" stroke="#dee2e6" stroke-width="0.3"/>`;
+    svg += `<text x="${x+YW/2}" y="${ROW1+16}" text-anchor="middle" font-size="11" font-weight="700" fill="#343a40">AÑO ${y+1}</text>`;
+    // Fila 2: meses del año
+    svg += `<rect x="${x}" y="${ROW2}" width="${YW}" height="${ROW2H}" fill="#f0f2f5" stroke="#dee2e6" stroke-width="0.3"/>`;
+    svg += `<text x="${x+YW/2}" y="${ROW2+17}" text-anchor="middle" font-size="9" fill="#6c757d">12 meses</text>`;
+  }
+
+  // Separador cabecera
+  svg += `<line x1="0" y1="${HDR_H}" x2="${TOTAL_W}" y2="${HDR_H}" stroke="#adb5bd" stroke-width="1"/>`;
+  // Constraint label 40 dh
+  svg += `<line x1="${px(8)}" y1="0" x2="${px(8)}" y2="${HDR_H}" stroke="#d13438" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+  svg += `<text x="${px(8)+2}" y="10" font-size="8" font-weight="700" fill="#d13438">40 dh</text>`;
+  // Constraint label 180 dh
+  svg += `<line x1="${px(IMPL_W)}" y1="0" x2="${px(IMPL_W)}" y2="${totalH}" stroke="#d13438" stroke-width="2"/>`;
+  svg += `<text x="${px(IMPL_W)+3}" y="10" font-size="8" font-weight="700" fill="#d13438">180 dh</text>`;
+
+  // ── Fondos de filas + zona años ──────────────────────────────────────────
+  const bodyH = phases.length * ROW_H + numGroups * GH;
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${IMPL_W*CW}" height="${bodyH}" fill="url(#wgrid)"/>`;
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${8*CW}" height="${bodyH}" fill="rgba(0,120,212,0.04)"/>`;
+  svg += `<rect x="${px(IMPL_W)}" y="${HDR_H}" width="${OP_YEARS*YW}" height="${bodyH}" fill="#f5f7fa"/>`;
+  for (let yy = 0; yy < OP_YEARS; yy++) {
+    const xx = px(IMPL_W + yy);
+    svg += `<line x1="${xx}" y1="${HDR_H}" x2="${xx}" y2="${HDR_H+bodyH}" stroke="#d0d8e0" stroke-width="0.8"/>`;
+  }
+
+  // ── Filas de actividades con encabezados de grupo ─────────────────────────
+  let yPos = HDR_H;
+  let lastGroup = null;
+  let rowIdx = 0;
+
+  phases.forEach((ph) => {
+    // ── Header de grupo cuando cambia ──
+    if (ph.group !== lastGroup) {
+      lastGroup = ph.group;
+      const gc = GROUPS[ph.group] || { color:'#343a40', bg:'#f5f5f5', label: ph.group };
+      svg += `<rect x="0" y="${yPos}" width="${TOTAL_W}" height="${GH}" fill="${gc.bg}"/>`;
+      svg += `<line x1="0" y1="${yPos}" x2="${TOTAL_W}" y2="${yPos}" stroke="${gc.color}" stroke-width="2"/>`;
+      svg += `<text x="8" y="${yPos+GH/2+4}" font-size="10" font-weight="700"
+        fill="${gc.color}" text-transform="uppercase" letter-spacing=".5">${gc.label}</text>`;
+      yPos += GH;
+    }
+
+    const ry = yPos;
+    const rowBg = rowIdx % 2 === 0 ? 'white' : '#fafbfc';
+    rowIdx++;
+    svg += `<rect x="0" y="${ry}" width="${LABEL_W}" height="${ROW_H}" fill="${rowBg}"/>`;
+
+    // Etiqueta
+    const isSub  = ph.tipo === 'sub';
+    const isMile = ph.tipo === 'milestone';
+    svg += `<text x="${isSub?14:6}" y="${ry+ROW_H/2+4}"
+      font-size="${isMile?9:isSub?9:11}"
+      font-weight="${isMile?'700':isSub?'400':'600'}"
+      fill="${isMile?ph.color:'#343a40'}">${ph.label}</text>`;
+
+    // Separador fila
+    svg += `<line x1="0" y1="${ry+ROW_H}" x2="${TOTAL_W}" y2="${ry+ROW_H}" stroke="#e9ecef" stroke-width="0.5"/>`;
+
+    if (ph.tipo === 'milestone') {
+      const mx = px(ph.s); const my = ry + ROW_H/2; const r = 7;
+      svg += `<polygon points="${mx},${my-r} ${mx+r},${my} ${mx},${my+r} ${mx-r},${my}" fill="${ph.color}" opacity="0.92"/>`;
+      svg += `<line x1="${mx}" y1="${HDR_H}" x2="${mx}" y2="${HDR_H+bodyH}" stroke="${ph.color}" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
+    } else {
+      const bx = px(ph.s) + 1;
+      const endX = px(ph.e) - 1;
+      const bw = endX - bx;
+      const bh = ph.tipo === 'sub' ? ROW_H*0.44 : ROW_H*0.60;
+      const by2 = ry + (ROW_H - bh)/2;
+      const rx2 = 3;
+
+      // Para barras que cruzan la línea de 180 dh: dos segmentos
+      if (ph.e > IMPL_W) {
+        // Segmento implementación (hasta 180 dh)
+        const midX = px(IMPL_W) - 1;
+        if (ph.s < IMPL_W) {
+          const w1 = midX - bx;
+          svg += `<rect x="${bx}" y="${by2}" width="${w1}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.85"/>`;
+        }
+        // Segmento años (después 180 dh) — más transparente y con texto "AÑOS"
+        const ax = px(IMPL_W) + 2;
+        const aw = endX - ax;
+        svg += `<rect x="${ax}" y="${by2}" width="${aw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.45"/>`;
+        // Flechas de continuación
+        svg += `<text x="${ax+aw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="${ph.color}" font-weight="700" opacity="0.9">► ${OP_YEARS} años</text>`;
+      } else {
+        svg += `<rect x="${bx}" y="${by2}" width="${bw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="${ph.tipo==='sub'?0.55:0.85}"/>`;
+        if (bw > 35) {
+          svg += `<text x="${bx+bw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="white" font-weight="600">${ph.e-ph.s}s</text>`;
+        }
+      }
+    }
+    yPos += ROW_H;  // avanzar posición vertical
+  });
+
+  // Línea INICIO y línea 180dh (sobre filas)
+  svg += `<line x1="${LABEL_W}" y1="${HDR_H}" x2="${LABEL_W}" y2="${HDR_H+bodyH}" stroke="#107c10" stroke-width="2"/>`;
+  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="36" height="14" rx="3" fill="#107c10"/>`;
+  svg += `<text x="${LABEL_W+18}" y="${HDR_H+10}" text-anchor="middle" font-size="8" fill="white" font-weight="700">INICIO</text>`;
+  svg += `<line x1="${px(IMPL_W)}" y1="${HDR_H}" x2="${px(IMPL_W)}" y2="${HDR_H+bodyH}" stroke="#d13438" stroke-width="2"/>`;
+
+  svg += '</svg>';
+
+  // ── Tabla detalle ────────────────────────────────────────────────────────
+  const rows = phases.filter(p => p.tipo !== 'sub').map(ph => {
+    const durW  = ph.e <= IMPL_W ? `${ph.e-ph.s} sem` : `${ph.e <= IMPL_W ? ph.e-ph.s : IMPL_W-ph.s} sem + ${OP_YEARS} años`;
+    const durDH = ph.tipo==='milestone' ? '—' : ph.e<=IMPL_W ? `~${(ph.e-ph.s)*5} dh` : `~${(IMPL_W-ph.s)*5} dh + 48 meses`;
+    const tipo = {prep:'Preparación',fase:'Implementación',milestone:'Hito',pool:'Pool Evolutivo',operacion:'Operación'}[ph.tipo]||ph.tipo;
+    return `<tr>
+      <td style="padding:7px 10px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${ph.color};margin-right:6px;vertical-align:middle"></span><strong>${ph.label}</strong></td>
+      <td style="padding:7px 10px;color:var(--gray-5);font-size:12px">${tipo}</td>
+      <td style="padding:7px 10px;font-size:12px;white-space:nowrap">S${ph.s+1}${ph.tipo!=='milestone'?` → ${ph.e>IMPL_W?'Año '+OP_YEARS:'S'+ph.e}`:''}</td>
+      <td style="padding:7px 10px;font-size:12px">${durW} / ${durDH}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--gray-5)">${ph.detail}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="padding:16px 20px">
+      <!-- Alertas RFP -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
+          ⏱️ <strong>Fase 1:</strong> máx <strong style="color:#d13438">40 días hábiles</strong> (8 semanas) · Go-Live Big Bang 400 usuarios
+        </div>
+        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
+          📅 <strong>Total Impl.:</strong> máx <strong style="color:#d13438">180 días hábiles</strong> (36 sem) · fases paralelas (Mod. N°4)
+        </div>
+        <div style="padding:8px 14px;background:#dff6dd;border:1px solid #9ddb9d;border-radius:6px;font-size:12px">
+          ✅ <strong>Propuesta W-it:</strong> impl. completa en <strong style="color:#107c10">~170 dh</strong> (34 sem) · ítems 2-5 inician S2 · máx holgura dentro de 180 dh
+        </div>
+        <div style="padding:8px 14px;background:#fff4ce;border:1px solid #f7ca7a;border-radius:6px;font-size:12px">
+          🔄 <strong>Sprints:</strong> 2 sem c/u · máx 25 · desde Go-Live F1 · <strong>Soporte:</strong> 48 meses
+        </div>
+      </div>
+
+      <!-- Gantt SVG -->
+      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:20px">
+        ${svg}
+      </div>
+
+      <!-- Leyenda -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;font-size:12px">
+        ${[['#0078d4','Fase 1 (base)'],['#2b7a3c','Fase 2 Subvenciones'],['#8764b8','Fase 3 Perm. Circ.'],['#d83b01','Fase 4 Veterinaria'],['#107c6e','Fase 5 Talleres'],['#986f0b','Pool Sprints'],['#6c757d','Operación 48m']].map(([c,l])=>`
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="width:14px;height:10px;background:${c};border-radius:2px;display:inline-block"></span>${l}
+          </div>`).join('')}
+      </div>
+
+      <!-- Tabla detalle -->
+      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow:hidden">
+        <div style="padding:12px 16px;background:var(--gray-1);border-bottom:1px solid var(--gray-2)">
+          <strong style="font-size:13px">Detalle por Fase</strong>
+          <span style="font-size:11px;color:var(--gray-5);margin-left:8px">según Bases CRM ID 2345-55-LR26 + Modificaciones 1, 4 + Respuestas foro</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--gray-1)">
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Fase / Hito</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Tipo</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Semanas</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Duración</th>
+                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Alcance y notas clave (RFP + consultas)</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.addEventListener('DOMContentLoaded', init);
+
+// Update UF info label on uf-rate change
+document.addEventListener('DOMContentLoaded', () => {
+  const ufIn = document.getElementById('uf-rate');
+  if (ufIn) {
+    ufIn.addEventListener('input', () => {
+      const infoEl = document.getElementById('global-uf-info');
+      if (infoEl) infoEl.textContent = `Referencia: 1.000 UF = ${clp(1000*Number(ufIn.value))}`;
+    });
+  }
+});
+</script>
+</body>
+</html>
