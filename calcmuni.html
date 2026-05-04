@@ -277,6 +277,7 @@
   <button class="tab-btn" onclick="showTab('licencias')">💿 Licenciamiento</button>
   <button class="tab-btn" onclick="showTab('imponderables')">⚠️ Imponderables</button>
   <button class="tab-btn" onclick="showTab('gantt')">📅 Plan de Implementación</button>
+  <button class="tab-btn" onclick="showTab('pagos')">💰 Pagos</button>
 </div>
 
 <!-- ════════════════ GLOBAL CONFIG BAR ════════════════ -->
@@ -647,6 +648,11 @@
   </div>
 </div>
 
+<!-- ════════════════ TAB: PAGOS ════════════════ -->
+<div id="tab-pagos" class="tab-content">
+  <div id="pagos-container"></div>
+</div>
+
 <!-- ════════════════ TAB: GANTT ════════════════ -->
 <div id="tab-gantt" class="tab-content">
   <div id="gantt-container"></div>
@@ -676,16 +682,17 @@ const S = {
       note:'Tarifa variable: 0,7 UF/hr costo · 1,2 UF/hr venta — se recalcula con el valor de la UF' },
   ],
   items: [
-    // ── CONTRATO BASE (41.834 UTM) ─────────────────────────────────────────
-    { id:'i7', name:'Soporte y Mesa de Ayuda',              fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'48 meses · 24/7 · SLA S1=15 min respuesta · revisiones trimestrales cumplimiento' },
-    { id:'i1', name:'Configuración Base CRM + Subsidios',   fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 1 · máx 40 días hábiles · Go-Live Big Bang 400 usuarios · Integraciones: ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway (maestros Vecinos/Func/Profesiones/Instituciones) · Migración ≥1 año calendario · Mod. N°1' },
-    { id:'i2', name:'Subvenciones (PYJ)',                   fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 2 · proceso de entrega de subvenciones · trazabilidad y auditoría · datos financieros beneficiarios · migración incluida' },
-    { id:'i3', name:'Permiso de Circulación (DTTP)',        fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 3 · integración MTT + CONASET (archivo F8) + aseguradoras AACH · ~130.000 pagos período · migración incluida' },
-    { id:'i4', name:'Atención Veterinaria Municipal',       fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 4 · certificados vacunas/microchip/recetas generados por CRM · exámenes médicos y psicométricos · ClaveÚnica · migración incluida' },
-    { id:'i5', name:'Talleres',                             fase:'Contrato Base', presupuesto:'Base', qty:1,   note:'Fase 5 · MODIFICACIÓN N°1: renombrado de "Centros Deportivos SPA" a "Talleres" · inscripción centros comunitarios y juntas de vecinos · Tarjeta Vecino · migración incluida' },
-    { id:'i8', name:'Activación y mantención de Usuarios',  fase:'Contrato Base', presupuesto:'Base', qty:400, note:'SS.PP. + Lic. Microsoft + Azure · 400 usuarios base (130 Atención Público + 168 Gestión + 70 Seguimiento + 25 Visador + 7 Admin) · 48 meses · EntraID JIT sync' },
-    // ── POOL EVOLUTIVO (26.545 UTM) — On-Demand, A.14.5 ──────────────────
-    { id:'i6', name:'Sprints por Mantenimiento Evolutivo',  fase:'Pool Evolutivo', presupuesto:'Evolutivo', qty:25, note:'Pool 26.545 UTM — pago por sprint utilizado · A.14.5', optional:true },
+    // ── FASE 1 (A.14.1) — CRM Base + Usuarios, máx 40 días hábiles ────────
+    { id:'i1', name:'Configuración Base CRM + Subsidios',   fase:'Fase 1', presupuesto:'Base', qty:1,   note:'Máx 40 días hábiles · Go-Live Big Bang 400 usuarios · ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway · Migración ≥1 año · Mod. N°1' },
+    { id:'i8', name:'Activación y mantención de Usuarios',  fase:'Fase 1', presupuesto:'Base', qty:400, note:'SS.PP. + Lic. Microsoft + Azure · 400 usuarios (130 Atención Público + 168 Gestión + 70 Seguimiento + 25 Visador + 7 Admin) · 48 meses · EntraID JIT sync' },
+    // ── FASE 2 (A.14.1) — Implementación ítems 2 al 5, fases paralelas ────
+    { id:'i2', name:'Subvenciones (PYJ)',                   fase:'Fase 2', presupuesto:'Base', qty:1,   note:'Proceso de entrega de subvenciones · trazabilidad y auditoría · datos financieros beneficiarios · migración incluida' },
+    { id:'i3', name:'Permiso de Circulación (DTTP)',        fase:'Fase 2', presupuesto:'Base', qty:1,   note:'Integración MTT + CONASET (archivo F8) + aseguradoras AACH · ~130.000 pagos período · migración incluida' },
+    { id:'i4', name:'Atención Veterinaria Municipal',       fase:'Fase 2', presupuesto:'Base', qty:1,   note:'Certificados vacunas/microchip/recetas por CRM · exámenes médicos y psicométricos · ClaveÚnica · migración incluida' },
+    { id:'i5', name:'Talleres',                             fase:'Fase 2', presupuesto:'Base', qty:1,   note:'MODIFICACIÓN N°1: "Centros Deportivos SPA" → "Talleres" · inscripción centros comunitarios y JJ.VV. · Tarjeta Vecino · migración incluida' },
+    // ── OPERACIÓN (A.14.1) — Soporte mensual + Pool sprints ───────────────
+    { id:'i7', name:'Soporte y Mesa de Ayuda',              fase:'Operación', presupuesto:'Base', qty:1,   note:'48 meses · 24/7 · SLA S1=15 min respuesta · revisiones trimestrales cumplimiento normativo' },
+    { id:'i6', name:'Sprints por Mantenimiento Evolutivo',  fase:'Operación', presupuesto:'Evolutivo', qty:25, note:'Pool 26.545 UTM · pago por sprint utilizado · máx 25 sprints × 2 semanas · A.14.5', optional:true },
   ],
   // hours[itemId][profileId] = hours  (defaults from Anexo 3 estimación)
   // Horas por ítem / perfil  — i1 incrementado +50% respecto a estimación original
@@ -694,17 +701,17 @@ const S = {
     // legal = Asesor Cumplimiento Leyes y Normativos (Ley 21.719, 21.663, 21.180)
     // sec   = Experto en Seguridad (ciberseg., accesos, cifrado, pen-testing plan)
     // ux    = Consultor / Diseñador UX·UI  (+30% sobre estimación anterior, redondeado)
-    i1: { arch:480, pm:640, crm:960, func:640, int:720, biz:400, dev:720, ux:200, legal:160, sec:200 },
-    //  Ítem 1 — BASE · Fase 1 máx 40 días hábiles · 9 integraciones requeridas en Fase 1
+    i1: { arch:336, pm:448, crm:672, func:448, int:504, biz:280, dev:504, ux:140, legal:112, sec:140 },
+    //  Ítem 1 — BASE · −30% horas · Fase 1 máx 40 días hábiles · 9 integraciones requeridas en Fase 1
     //  (ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE2, API Gateway+maestros)
     //  int elevado: cada API requiere levantamiento, autenticación, pruebas y documentación.
     i2: { arch:120, pm:200, crm:400, func:320, int:200, biz:200, dev:400, ux:120, legal:120, sec:120 },
     //  Ítem 2 — Subvenciones PYJ: datos financieros y beneficiarios → trazabilidad auditada.
-    i3: { arch:200, pm:400, crm:800, func:640, int:640, biz:400, dev:880, ux:160, legal:80,  sec:120 },
-    //  Ítem 3 — Permiso Circulación: ~130.000 pagos/período · integración MTT, CONASET (F8),
+    i3: { arch:220, pm:440, crm:880, func:704, int:704, biz:440, dev:968, ux:176, legal:88,  sec:132 },
+    //  Ítem 3 — Permiso Circulación: +10% horas · ~130.000 pagos/período · MTT, CONASET (F8),
     //  aseguradoras AACH, ERP Proexsi (SOAP) · alto volumen y complejidad de integración.
-    i4: { arch:80,  pm:160, crm:320, func:260, int:120, biz:160, dev:320, ux:80,  legal:60,  sec:60  },
-    //  Ítem 4 — Veterinaria: certificados generados por CRM, exámenes, ClaveÚnica.
+    i4: { arch:96,  pm:192, crm:384, func:312, int:144, biz:192, dev:384, ux:96,  legal:72,  sec:72  },
+    //  Ítem 4 — Veterinaria: +20% horas · certificados generados por CRM, exámenes, ClaveÚnica.
     i5: { arch:80,  pm:160, crm:320, func:260, int:120, biz:160, dev:320, ux:80,  legal:60,  sec:60  },
     //  Ítem 5 — Talleres (ex-Centros Deportivos SPA · Mod N°1): inscripción talleres
     //  comunitarios, Tarjeta Vecino, gestión cupos. Menor integración que i3.
@@ -1056,15 +1063,12 @@ function updateProfileUF(id, field, ufValStr, inputEl) {
 // ═══════════════════════════════════════════════════
 // Phase config for styling
 const FASE_CONFIG = {
-  'Contrato Base':  { color:'#0078d4', bg:'#e6f2fb', label:'CONTRATO BASE — Ítems 7, 1, 2, 3, 4, 5' },
-  'Pool Evolutivo': { color:'#8764b8', bg:'#f5f0ff', label:'POOL EVOLUTIVO — Ítems 8 y 6' },
-  // Mantener entradas legacy por compatibilidad con datos guardados
-  'Fase 1':    { color:'#0078d4', bg:'#e6f2fb', label:'FASE 1' },
-  'Fase 2':    { color:'#2b7a3c', bg:'#dff6dd', label:'FASE 2' },
-  'Fase 3':    { color:'#8764b8', bg:'#ede8f8', label:'FASE 3' },
-  'Fase 4':    { color:'#d83b01', bg:'#fde7d5', label:'FASE 4' },
-  'Fase 5':    { color:'#107c6e', bg:'#d8f0ec', label:'FASE 5' },
-  'Operación': { color:'#986f0b', bg:'#fff4ce', label:'OPERACIÓN' },
+  'Fase 1':       { color:'#0078d4', bg:'#e6f2fb', label:'FASE 1 — CRM Base + Subsidios + Usuarios',  badge:'Base 41.834 UTM', badgeColor:'#0078d4' },
+  'Fase 2':       { color:'#2b7a3c', bg:'#dff6dd', label:'FASE 2 — Implementación Procesos (Íts. 2-5)', badge:'Por fase implementada', badgeColor:'#2b7a3c' },
+  'Operación':    { color:'#986f0b', bg:'#fff4ce', label:'OPERACIÓN — Soporte 48m + Pool Sprints',     badge:'Base + Pool 26.545 UTM', badgeColor:'#986f0b' },
+  // Legacy (por compatibilidad con datos guardados)
+  'Contrato Base':  { color:'#0078d4', bg:'#e6f2fb', label:'CONTRATO BASE', badge:'Base 41.834 UTM', badgeColor:'#0078d4' },
+  'Pool Evolutivo': { color:'#8764b8', bg:'#f5f0ff', label:'POOL EVOLUTIVO', badge:'Pool 26.545 UTM', badgeColor:'#8764b8' },
 };
 
 function itemNumLabel(id) {
@@ -1088,13 +1092,13 @@ function renderItems() {
 
     // Phase group header
     if (it.fase !== lastFase) {
-      const pBudget = it.presupuesto === 'Evolutivo'
-        ? '<span style="font-size:10px;background:#8764b8;color:white;padding:2px 7px;border-radius:10px;margin-left:8px;">Pool 26.545 UTM</span>'
-        : '<span style="font-size:10px;background:#0078d4;color:white;padding:2px 7px;border-radius:10px;margin-left:8px;">Contrato Base 41.834 UTM</span>';
+      const pBadge = fc.badge
+        ? `<span style="font-size:10px;background:${fc.badgeColor};color:white;padding:2px 8px;border-radius:10px;margin-left:8px;">${fc.badge}</span>`
+        : '';
       tbody.innerHTML += `<tr>
-        <td colspan="8" style="background:${fc.bg};padding:6px 12px;border-top:2px solid ${fc.color};">
+        <td colspan="8" style="background:${fc.bg};padding:7px 12px;border-top:2px solid ${fc.color};">
           <span style="font-size:11px;font-weight:700;color:${fc.color};text-transform:uppercase;letter-spacing:.5px;">${fc.label}</span>
-          ${pBudget}
+          ${pBadge}
         </td>
       </tr>`;
       lastFase = it.fase;
@@ -2244,6 +2248,7 @@ function recalcAll() {
   else if (id === 'licencias') renderLicenses();
   else if (id === 'imponderables') renderImponderables();
   else if (id === 'gantt') renderGantt();
+  else if (id === 'pagos') renderPagos();
 
   // Always update header — consultoría neto + licencias c/IVA
   const ct = calcConsultingTotals();
@@ -2258,7 +2263,7 @@ function recalcAll() {
   updateHeader(totalClientRev, grossPct, netPct);
 
   // Save to localStorage
-  try { localStorage.setItem('mlc_state', JSON.stringify({ v:16, municipalityBudgetUF: S.municipalityBudgetUF, competitiveDiscount: S.competitiveDiscount, utmRate: S.utmRate, includeOptional: S.includeOptional, hours: S.hours, profiles: S.profiles, licenses: S.licenses, imponderables: S.imponderables, targetBudget: S.targetBudget, exchangeRate: S.exchangeRate, ufRate: S.ufRate })); } catch(e){}
+  try { localStorage.setItem('mlc_state', JSON.stringify({ v:18, municipalityBudgetUF: S.municipalityBudgetUF, competitiveDiscount: S.competitiveDiscount, utmRate: S.utmRate, includeOptional: S.includeOptional, hours: S.hours, profiles: S.profiles, licenses: S.licenses, imponderables: S.imponderables, targetBudget: S.targetBudget, exchangeRate: S.exchangeRate, ufRate: S.ufRate })); } catch(e){}
 }
 
 // ═══════════════════════════════════════════════════
@@ -2293,7 +2298,7 @@ function init() {
     const saved = localStorage.getItem('mlc_state');
     if (saved) {
       const d = JSON.parse(saved);
-      if (d.v === 16) {
+      if (d.v === 18) {
         if (d.includeOptional !== undefined) S.includeOptional = d.includeOptional;
         if (d.municipalityBudgetUF !== undefined) S.municipalityBudgetUF = d.municipalityBudgetUF;
         if (d.competitiveDiscount  !== undefined) S.competitiveDiscount  = d.competitiveDiscount;
@@ -2359,6 +2364,290 @@ function init() {
 }
 
 // ═══════════════════════════════════════════════════
+//  RENDER: PAGOS — Hitos y flujo de caja mensual
+//  Ítems 2-5: 4 hitos (Análisis 30%, Diseño 20%, Desarrollo 30%, Producción 20%)
+//  Ítems 6 y 7: mensual fijo = total / meses contrato (48)
+// ═══════════════════════════════════════════════════
+let pagosChart = null;
+function renderPagos() {
+  const el = document.getElementById('pagos-container');
+  if (!el) return;
+
+  // ── Valores de venta por ítem ──────────────────────────────────────────
+  const c1   = calcItemCosts('i1');
+  const c2   = calcItemCosts('i2');
+  const c3   = calcItemCosts('i3');
+  const c4   = calcItemCosts('i4');
+  const c5   = calcItemCosts('i5');
+  const c6   = calcItemCosts('i6');
+  const c7   = calcItemCosts('i7');
+  const c8s  = calcItemCosts('i8');  // servicio
+  const lic  = calcLicenseTotalsRaw();
+  const i8Rev  = c8s.revenue + lic.revenue * (1 + getIvaRate()/100);  // incluye licencias
+  const i8Cost = c8s.cost    + lic.cost;
+
+  const CM = 48;  // meses de contrato (soporte/operación)
+
+  // ── Timing de fases (semanas → meses: 1 mes = 4 semanas) ──────────────
+  const w2m = w => w / 4;
+  const G = { i1:{s:0,e:8}, i2:{s:2,e:28}, i3:{s:2,e:34}, i4:{s:2,e:28}, i5:{s:2,e:26} };
+  const OP_START = 2;  // mes en que arrancan los pagos mensuales (post Go-Live Fase 1)
+
+  // ── Hitos para ítems 2-5 (4 etapas)
+  //  Análisis: inicio real del ítem (s + pequeño margen) → siempre Mes 2 mínimo
+  //  Distribución: 8% / 35% / 65% / 100% de la duración
+  function hitos(rev, item) {
+    const s = w2m(G[item].s), e = w2m(G[item].e), d = e - s;
+    return [
+      { etapa:'Análisis (30%)',             pct:.30, m: Math.max(1, Math.round(s + d*.08)), amt: rev*.30 },
+      { etapa:'Diseño (20%)',               pct:.20, m: Math.round(s + d*.35),              amt: rev*.20 },
+      { etapa:'Fin Desarrollo (30%)',       pct:.30, m: Math.round(s + d*.65),              amt: rev*.30 },
+      { etapa:'Puesta en Producción (20%)', pct:.20, m: Math.round(e),                      amt: rev*.20 },
+    ];
+  }
+
+  // ── Tabla de hitos de pago (agrupados por fase según A.14.1) ─────────
+  const ITEMS = [
+    // ── FASE 1 ──────────────────────────────────────────────────────────
+    { id:'i1', fase:'Fase 1', lbl:'Ítem 1 — CRM Base + Subsidios', color:'#0078d4', rev: c1.revenue,
+      hitos:[{ etapa:'Pago único · Go-Live Fase 1 (máx 40 dh)', pct:1.00, m:2, amt:c1.revenue }] },
+    { id:'i8', fase:'Fase 1', lbl:'Ítem 8 — Activación y mantención Usuarios (mensual)', color:'#005a9e', rev: i8Rev,
+      monthly: Math.round(i8Rev / CM), start: OP_START, months: CM, isMonthly:true },
+    // ── FASE 2 ──────────────────────────────────────────────────────────
+    { id:'i2', fase:'Fase 2', lbl:'Ítem 2 — Subvenciones',           color:'#2b7a3c', rev: c2.revenue, hitos: hitos(c2.revenue,'i2') },
+    { id:'i3', fase:'Fase 2', lbl:'Ítem 3 — Permiso de Circulación', color:'#8764b8', rev: c3.revenue, hitos: hitos(c3.revenue,'i3') },
+    { id:'i4', fase:'Fase 2', lbl:'Ítem 4 — Veterinaria',             color:'#d83b01', rev: c4.revenue, hitos: hitos(c4.revenue,'i4') },
+    { id:'i5', fase:'Fase 2', lbl:'Ítem 5 — Talleres',                color:'#107c6e', rev: c5.revenue, hitos: hitos(c5.revenue,'i5') },
+    // ── OPERACIÓN ───────────────────────────────────────────────────────
+    { id:'i7', fase:'Operación', lbl:'Ítem 7 — Soporte y Mesa de Ayuda (mensual)', color:'#6c757d', rev: c7.revenue,
+      monthly: Math.round(c7.revenue / CM), start: OP_START, months: CM, isMonthly:true },
+    { id:'i6', fase:'Operación', lbl:'Ítem 6 — Sprints Evolutivos (mensual distrib.)', color:'#986f0b', rev: c6.revenue,
+      monthly: Math.round(c6.revenue / CM), start: OP_START, months: CM, isMonthly:true },
+  ];
+
+  // ── Flujo mensual (meses 0-51) ─────────────────────────────────────────
+  const SHOW_M = 52;
+  const flow   = Array.from({length:SHOW_M}, ()=>({}));
+
+  ITEMS.forEach(it => {
+    if (it.isMonthly) {
+      for (let m = it.start; m < it.start + it.months && m < SHOW_M; m++) {
+        flow[m][it.id] = (flow[m][it.id]||0) + it.monthly;
+      }
+    } else {
+      it.hitos.forEach(h => {
+        if (h.m >= 0 && h.m < SHOW_M) flow[h.m][it.id] = (flow[h.m][it.id]||0) + h.amt;
+      });
+    }
+  });
+
+  // Totales por mes y acumulado
+  const monthTotal = flow.map(m => Object.values(m).reduce((a,v)=>a+v,0));
+  let cum = 0; const cumTotal = monthTotal.map(v => (cum += v));
+  const grandTotal = cum;
+
+  // Totales por bloque
+  const totalUnico    = ITEMS.filter(i=>!i.isMonthly).reduce((a,i)=>a+i.rev,0);
+  const totalMensual  = ITEMS.filter(i=>i.isMonthly).reduce((a,i)=>a+i.monthly,0);
+  const totalContrato = grandTotal;
+
+  // ── HTML ───────────────────────────────────────────────────────────────
+  // Summary cards
+  const summaryCards = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px">
+      <div class="summary-card"><div class="sc-label">Pagos Únicos / Hitos (Impl.)</div>
+        <div class="sc-value">${clp(totalUnico)}</div>
+        <div class="sc-sub">${uf(totalUnico)}</div></div>
+      <div class="summary-card" style="border-left-color:#107c10">
+        <div class="sc-label">Pago Mensual Recurrente</div>
+        <div class="sc-value" style="color:#107c10">${clp(totalMensual)}</div>
+        <div class="sc-sub">× 48 meses = ${clp(totalMensual*CM)}</div></div>
+      <div class="summary-card" style="border-left-color:#986f0b">
+        <div class="sc-label">Total Contrato (48 meses)</div>
+        <div class="sc-value" style="color:#986f0b">${clp(totalContrato)}</div>
+        <div class="sc-sub">${uf(totalContrato)}</div></div>
+      <div class="summary-card" style="border-left-color:#8764b8">
+        <div class="sc-label">Ingresos Promedio / Mes</div>
+        <div class="sc-value" style="color:#8764b8">${clp(Math.round(totalContrato/CM))}</div>
+        <div class="sc-sub">durante los 48 meses</div></div>
+    </div>`;
+
+  // Tabla de hitos — agrupada por fase
+  const FASE_CONFIG_P = {
+    'Fase 1':    { label:'Fase 1 — Contrato Base · Ítems 1 y 8',          color:'#0078d4', bg:'#e6f2fb', sub:'41.834 UTM · Pago único + mensual' },
+    'Fase 2':    { label:'Fase 2 — Implementación Procesos · Ítems 2 al 5', color:'#2b7a3c', bg:'#dff6dd', sub:'Ítems pagados por fase implementada (A.14.1)' },
+    'Operación': { label:'Operación — Soporte y Sprints · Ítems 6 y 7',     color:'#6c757d', bg:'#f5f5f5', sub:'48 meses · mensual fijo · Pool 26.545 UTM' },
+  };
+  let hitoRows = '';
+  let lastFase = null;
+  // Subtotales por fase
+  const faseTotals = {};
+  ITEMS.forEach(it => {
+    if (!faseTotals[it.fase]) faseTotals[it.fase] = 0;
+    faseTotals[it.fase] += it.rev;
+  });
+
+  ITEMS.forEach(it => {
+    // Encabezado de fase
+    if (it.fase !== lastFase) {
+      lastFase = it.fase;
+      const fc = FASE_CONFIG_P[it.fase];
+      hitoRows += `<tr>
+        <td colspan="5" style="padding:8px 10px;background:${fc.bg};border-top:2px solid ${fc.color};border-bottom:1px solid ${fc.color}33">
+          <span style="font-size:12px;font-weight:700;color:${fc.color};text-transform:uppercase;letter-spacing:.3px">${fc.label}</span>
+          <span style="font-size:11px;color:var(--gray-5);margin-left:8px">${fc.sub}</span>
+          <span style="float:right;font-size:12px;font-weight:700;color:${fc.color}">${clp(faseTotals[it.fase])}</span>
+        </td>
+      </tr>`;
+    }
+
+    if (it.isMonthly) {
+      hitoRows += `<tr>
+        <td style="padding:7px 10px 7px 22px">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${it.color};margin-right:6px;vertical-align:middle"></span>
+          <strong>${it.lbl}</strong>
+        </td>
+        <td style="padding:7px 10px;font-size:12px;color:var(--gray-5)">Mensual desde M${it.start+1} · ${it.months} cuotas</td>
+        <td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:600;color:${it.color}">${clp(it.monthly)}<span style="font-size:10px;font-weight:400">/mes</span></td>
+        <td style="padding:7px 10px;font-size:12px;text-align:right">${clp(it.rev)}</td>
+        <td style="padding:7px 10px;font-size:12px;text-align:right">${uf(it.rev)}</td>
+      </tr>`;
+    } else {
+      it.hitos.forEach((h,hi) => {
+        hitoRows += `<tr>
+          <td style="padding:6px 10px 6px 22px${hi===0?'':';border-top:none'}">
+            ${hi===0?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${it.color};margin-right:6px;vertical-align:middle"></span><strong>${it.lbl}</strong>`:''}
+          </td>
+          <td style="padding:6px 10px;font-size:12px">
+            <span style="background:${it.color}22;color:${it.color};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${h.etapa}</span>
+            <span style="font-size:11px;color:var(--gray-5);margin-left:6px">→ Mes ${h.m+1}</span>
+          </td>
+          <td style="padding:6px 10px;font-size:12px;text-align:right;font-weight:600;color:${it.color}">${(h.pct*100).toFixed(0)}% → ${clp(h.amt)}</td>
+          <td style="padding:6px 10px;font-size:12px;text-align:right">${hi===0?clp(it.rev):''}</td>
+          <td style="padding:6px 10px;font-size:12px;text-align:right">${hi===0?uf(it.rev):''}</td>
+        </tr>`;
+      });
+    }
+  });
+
+  // Tabla mensual (primeros 24 meses + resumen)
+  const colColors = {'i1':'#0078d4','i2':'#2b7a3c','i3':'#8764b8','i4':'#d83b01','i5':'#107c6e','i8':'#005a9e','i7':'#6c757d','i6':'#986f0b'};
+  let mRows = '';
+  for (let m = 0; m < Math.min(SHOW_M, 54); m++) {
+    const tot = monthTotal[m];
+    if (tot === 0) continue;
+    const mLabel = `M${m+1}`;
+    const bar = `<div style="display:flex;height:12px;border-radius:2px;overflow:hidden;min-width:80px">
+      ${ITEMS.map(it=>{
+        const v = flow[m][it.id]||0;
+        return v>0?`<div style="flex:${v};background:${it.color}" title="${it.lbl}: ${clp(v)}"></div>`:'';
+      }).join('')}
+    </div>`;
+    mRows += `<tr${m%2===0?' style="background:#fafbfc"':''}>
+      <td style="padding:5px 10px;font-weight:600;white-space:nowrap">${mLabel}</td>
+      <td style="padding:5px 10px">${bar}</td>
+      <td style="padding:5px 10px;text-align:right;font-weight:700">${clp(tot)}</td>
+      <td style="padding:5px 10px;text-align:right;color:var(--gray-5);font-size:11px">${uf(tot)}</td>
+      <td style="padding:5px 10px;text-align:right;color:#107c10;font-size:11px">${clp(cumTotal[m])}</td>
+      <td style="padding:5px 10px;font-size:11px;color:var(--gray-5)">
+        ${ITEMS.filter(it=>(flow[m][it.id]||0)>0).map(it=>`<span style="color:${it.color};margin-right:6px">●${it.id.toUpperCase()}</span>`).join('')}
+      </td>
+    </tr>`;
+  }
+
+  // Chart canvas
+  const chartId = 'pagosChartCanvas';
+
+  el.innerHTML = `<div style="padding:16px 20px">
+    ${summaryCards}
+
+    <!-- Gráfico flujo de caja -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div>
+        <h2>Flujo de Caja Mensual — Primeros 18 Meses</h2>
+        <p>Proyección de ingresos por mes · implementación + inicio operación (Anexo N°3 · A.14.1)</p>
+      </div></div>
+      <div class="card-body"><div style="height:300px"><canvas id="${chartId}"></canvas></div></div>
+    </div>
+
+    <!-- Tabla hitos -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div>
+        <h2>Hitos de Pago por Ítem</h2>
+        <p>Ítems 2-5: Análisis 30% · Diseño 20% · Fin Desarrollo 30% · Puesta en Producción 20% | Ítems 6, 7, 8: mensual fijo</p>
+      </div></div>
+      <div class="card-body" style="padding:0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:var(--gray-1)">
+            <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Ítem</th>
+            <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Hito / Periodicidad</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">% → Monto</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Total Ítem</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">UF</th>
+          </tr></thead>
+          <tbody>${hitoRows}</tbody>
+          <tfoot><tr style="background:var(--gray-6);color:white">
+            <td colspan="3" style="padding:8px 10px;font-weight:700">TOTAL CONTRATO (implementación + 48 meses operación)</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:700">${clp(grandTotal)}</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:700">${uf(grandTotal)}</td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabla mensual -->
+    <div class="card">
+      <div class="card-header"><div>
+        <h2>Detalle Mensual de Ingresos</h2>
+        <p>Solo meses con movimiento · acumulado al final de cada mes</p>
+      </div></div>
+      <div class="card-body" style="padding:0">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--gray-1)">
+            <th style="padding:7px 10px;text-align:left;border-bottom:2px solid var(--gray-3);font-size:11px">Mes</th>
+            <th style="padding:7px 10px;border-bottom:2px solid var(--gray-3);font-size:11px">Composición</th>
+            <th style="padding:7px 10px;text-align:right;border-bottom:2px solid var(--gray-3);font-size:11px">Total Mes</th>
+            <th style="padding:7px 10px;text-align:right;border-bottom:2px solid var(--gray-3);font-size:11px">UF</th>
+            <th style="padding:7px 10px;text-align:right;border-bottom:2px solid var(--gray-3);font-size:11px;color:#107c10">Acumulado</th>
+            <th style="padding:7px 10px;border-bottom:2px solid var(--gray-3);font-size:11px">Ítems</th>
+          </tr></thead>
+          <tbody>${mRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  // ── Chart.js — diferido con requestAnimationFrame para que el canvas esté visible ──
+  const _labels18 = Array.from({length:18},(_,i)=>`M${i+1}`);
+  const _datasets18 = ITEMS.map(it => ({
+    label: it.lbl.replace(/Ítem \d+ — /,'').replace(' (mensual)','').replace(' (mensual distrib.)',''),
+    backgroundColor: it.color + 'cc',
+    data: _labels18.map((_,m) => Math.round((flow[m][it.id]||0)/1e6*100)/100)
+  })).filter(d => d.data.some(v=>v>0));
+
+  requestAnimationFrame(() => {
+    const ctx18 = document.getElementById(chartId);
+    if (!ctx18) return;
+    if (pagosChart) { pagosChart.destroy(); pagosChart = null; }
+    pagosChart = new Chart(ctx18, {
+      type:'bar',
+      data:{ labels: _labels18, datasets: _datasets18 },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ position:'bottom', labels:{font:{size:10},padding:6,boxWidth:12} },
+          tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: $${c.raw}M` } }
+        },
+        scales:{
+          x:{ stacked:true },
+          y:{ stacked:true, ticks:{ callback: v=>`$${v}M` } }
+        }
+      }
+    });
+  }); // fin requestAnimationFrame
+}
+
+// ═══════════════════════════════════════════════════
 //  RENDER: GANTT — Plan de Implementación
 //  Cabecera: meses (fila 1) + semanas (fila 2)
 //  Después 180 dh: zona "Años" para sprints y soporte
@@ -2387,255 +2676,10 @@ function renderGantt() {
   const CHART_W = IMPL_W * CW + OP_YEARS * YW;
   const TOTAL_W = LABEL_W + CHART_W;
 
-  // ── Fases (s/e en columnas: 0-35=semanas, 36-39=años) ──────────────────
-  const phases = [
-    { id:'kick', label:'Kickoff & Arquitectura de Solución', s:0,  e:2,  color:'#343a40', tipo:'prep',
-      detail:'Onboarding, definición de arquitectura, setup 3 ambientes (dev/test/prod), accesos a API Gateway, EntraID, GovAPIs.' },
-    { id:'f1',   label:'Fase 1 — CRM Base + Subsidios',      s:0,  e:8,  color:'#0078d4', tipo:'fase',
-      detail:'CRM base, flujo Subsidios, 400 usuarios. Integraciones: ClaveÚnica, EntraID, SGD, Finanzas, Tarjeta Vecino, PISEE 2, API Gateway (6 maestros). Migración ≥1 año. Máx 40 dh.' },
-    { id:'f1a',  label:'  ↳ Diseño CRM + Configuración',     s:0,  e:5,  color:'#2196f3', tipo:'sub',
-      detail:'Modelado de datos ciudadano, flujos de trabajo, Portal Vecino, RBAC y perfiles.' },
-    { id:'f1b',  label:'  ↳ Integraciones Fase 1 (9 APIs)',  s:1,  e:7,  color:'#2196f3', tipo:'sub',
-      detail:'ClaveÚnica, EntraID JIT, SGD, ERP Proexsi (SOAP), Tarjeta Vecino, PISEE 2, API Gateway.' },
-    { id:'f1c',  label:'  ↳ UAT + Capacitación + Go-Live',   s:6,  e:8,  color:'#2196f3', tipo:'sub',
-      detail:'UAT con usuarios clave, capacitación funcionales y TI, Go-Live Big Bang 400 usuarios.' },
-    { id:'m1',   label:'🚀 Go-Live Fase 1 — 400 usuarios',   s:8,  e:8,  color:'#0078d4', tipo:'milestone',
-      detail:'CRM operativo con 400 usuarios. Subsidios activos. Integraciones Fase 1 en producción. Máx S8 (40 dh).' },
-    { id:'f2',   label:'Fase 2 — Subvenciones (PYJ)',         s:4,  e:18, color:'#2b7a3c', tipo:'fase',
-      detail:'Subvenciones municipales. Datos financieros y beneficiarios. Trazabilidad auditada. Migración ≥1 año. ERP Proexsi. (+30% holgura: 14 sem)' },
-    { id:'f3',   label:'Fase 3 — Permiso de Circulación',    s:4,  e:26, color:'#8764b8', tipo:'fase',
-      detail:'~130.000 pagos/período. MTT + CONASET (F8) + AACH + ERP Proexsi SOAP. Mayor complejidad. (+30% holgura: 22 sem)' },
-    { id:'f4',   label:'Fase 4 — Veterinaria Municipal',      s:6,  e:18, color:'#d83b01', tipo:'fase',
-      detail:'Certificados vacunas/microchip/recetas por CRM. Exámenes médicos. ClaveÚnica. (+30% holgura: 12 sem)' },
-    { id:'f5',   label:'Fase 5 — Talleres (Mod. N°1)',        s:6,  e:18, color:'#107c6e', tipo:'fase',
-      detail:'Inscripción talleres comunitarios/JJ.VV. Tarjeta Vecino, gestión cupos. Mod. N°1. (+30% holgura: 12 sem)' },
-    { id:'m2',   label:'✅ Go-Live Fases 2, 4 y 5',          s:18, e:18, color:'#2b7a3c', tipo:'milestone',
-      detail:'Subvenciones, Veterinaria y Talleres en producción. S18 = 90 dh. Buffer 90 dh hasta límite 180.' },
-    { id:'m3',   label:'✅ Go-Live Fase 3 — Permiso Circ.',  s:26, e:26, color:'#8764b8', tipo:'milestone',
-      detail:'Permiso de Circulación en producción. S26 = 130 dh < máx 180. Buffer: 50 dh (10 semanas).' },
-    // ── Líneas que se extienden a la zona de años (e > IMPL_W) ─────────────
-    { id:'spr',  label:'Sprints Mantenimiento Evolutivo (x25)',s:9, e:40, color:'#986f0b', tipo:'pool',
-      detail:'Pool 26.545 UTM. Máx 25 sprints × 2 semanas. On-demand. Disponible desde Go-Live Fase 1 durante los 4 años de contrato.' },
-    { id:'op',   label:'Operación & Soporte — 48 meses',      s:26, e:40, color:'#5a6472', tipo:'operacion',
-      detail:'Soporte 24/7. SLA S1=15 min. Revisiones trimestrales seguridad y cumplimiento normativo. 48 meses desde Go-Live completo.' },
-  ];
-
-  const totalH = phases.length * ROW_H + HDR_H + 16;
-
-  // ── SVG ──────────────────────────────────────────────────────────────────
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TOTAL_W}" height="${totalH}"
-    style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:block">
-  <defs>
-    <pattern id="wgrid" width="${CW}" height="${ROW_H}" patternUnits="userSpaceOnUse">
-      <path d="M${CW} 0 L${CW} ${ROW_H}" stroke="#e9ecef" stroke-width="0.4"/>
-    </pattern>
-    <pattern id="ystrip" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="20" stroke="#dee2e6" stroke-width="6"/>
-    </pattern>
-  </defs>
-  <rect width="${TOTAL_W}" height="${totalH}" fill="white"/>`;
-
-  // ── Cabecera ─────────────────────────────────────────────────────────────
-  // Fondo etiquetas
-  svg += `<rect x="0" y="0" width="${LABEL_W}" height="${HDR_H}" fill="#f0f4f8"/>`;
-  svg += `<text x="10" y="16" font-size="11" font-weight="700" fill="#343a40">ACTIVIDAD / FASE</text>`;
-  svg += `<text x="10" y="30" font-size="9" fill="#6c757d">ID 2345-55-LR26 · Mod.N°1 · Mod.N°4</text>`;
-  svg += `<text x="10" y="44" font-size="9" fill="#6c757d">1 semana = 5 días hábiles</text>`;
-
-  // Zona implementación — fila 1 (meses) + fila 2 (semanas)
-  const ROW1 = 0, ROW1H = 26, ROW2 = 26, ROW2H = 26;
-  for (let w = 0; w < IMPL_W; w++) {
-    const x = px(w);
-    const isM = w % 4 === 0;
-    const isM40 = w < 8;
-    // Fila 1: meses
-    if (w % 4 === 0) {
-      const mw = 4 * CW;
-      const m = Math.floor(w/4) + 1;
-      svg += `<rect x="${x}" y="${ROW1}" width="${mw}" height="${ROW1H}" fill="${isM40?'#d8ecfb':'#edf2f7'}" stroke="#dee2e6" stroke-width="0.3"/>`;
-      svg += `<text x="${x+mw/2}" y="${ROW1+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${isM40?'#005a9e':'#343a40'}">M${m}</text>`;
-    }
-    // Fila 2: semanas
-    svg += `<rect x="${x}" y="${ROW2}" width="${CW}" height="${ROW2H}" fill="${isM40?'#ebf5fd':'white'}" stroke="#e9ecef" stroke-width="0.3"/>`;
-    if (w % 2 === 0) {
-      svg += `<text x="${x+CW/2}" y="${ROW2+17}" text-anchor="middle" font-size="8" fill="#6c757d">S${w+1}</text>`;
-    }
-  }
-
-  // Zona años — cabecera (meses no aplica, solo "AÑO N")
-  for (let y = 0; y < OP_YEARS; y++) {
-    const x = px(IMPL_W + y);
-    // Fila 1: etiqueta año
-    svg += `<rect x="${x}" y="${ROW1}" width="${YW}" height="${ROW1H}" fill="#e8edf2" stroke="#dee2e6" stroke-width="0.3"/>`;
-    svg += `<text x="${x+YW/2}" y="${ROW1+16}" text-anchor="middle" font-size="11" font-weight="700" fill="#343a40">AÑO ${y+1}</text>`;
-    // Fila 2: meses del año
-    svg += `<rect x="${x}" y="${ROW2}" width="${YW}" height="${ROW2H}" fill="#f0f2f5" stroke="#dee2e6" stroke-width="0.3"/>`;
-    svg += `<text x="${x+YW/2}" y="${ROW2+17}" text-anchor="middle" font-size="9" fill="#6c757d">12 meses</text>`;
-  }
-
-  // Separador cabecera
-  svg += `<line x1="0" y1="${HDR_H}" x2="${TOTAL_W}" y2="${HDR_H}" stroke="#adb5bd" stroke-width="1"/>`;
-  // Constraint label 40 dh
-  svg += `<line x1="${px(8)}" y1="0" x2="${px(8)}" y2="${HDR_H}" stroke="#d13438" stroke-width="1.5" stroke-dasharray="3,2"/>`;
-  svg += `<text x="${px(8)+2}" y="10" font-size="8" font-weight="700" fill="#d13438">40 dh</text>`;
-  // Constraint label 180 dh
-  svg += `<line x1="${px(IMPL_W)}" y1="0" x2="${px(IMPL_W)}" y2="${totalH}" stroke="#d13438" stroke-width="2"/>`;
-  svg += `<text x="${px(IMPL_W)+3}" y="10" font-size="8" font-weight="700" fill="#d13438">180 dh</text>`;
-
-  // ── Fondos de filas + zona años ──────────────────────────────────────────
-  const bodyH = phases.length * ROW_H;
-  // Grid semanas implementación
-  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${IMPL_W*CW}" height="${bodyH}" fill="url(#wgrid)"/>`;
-  // Zona azul tenue primeras 8 semanas
-  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="${8*CW}" height="${bodyH}" fill="rgba(0,120,212,0.04)"/>`;
-  // Zona años (fondo rayado / diferenciado)
-  svg += `<rect x="${px(IMPL_W)}" y="${HDR_H}" width="${OP_YEARS*YW}" height="${bodyH}" fill="#f5f7fa"/>`;
-  for (let y = 0; y < OP_YEARS; y++) {
-    const x = px(IMPL_W + y);
-    svg += `<line x1="${x}" y1="${HDR_H}" x2="${x}" y2="${HDR_H+bodyH}" stroke="#d0d8e0" stroke-width="0.8"/>`;
-  }
-
-  // ── Filas de actividades ─────────────────────────────────────────────────
-  phases.forEach((ph, i) => {
-    const ry = HDR_H + i * ROW_H;
-    const rowBg = i % 2 === 0 ? 'white' : '#fafbfc';
-    svg += `<rect x="0" y="${ry}" width="${LABEL_W}" height="${ROW_H}" fill="${rowBg}"/>`;
-
-    // Etiqueta
-    const isSub  = ph.tipo === 'sub';
-    const isMile = ph.tipo === 'milestone';
-    svg += `<text x="${isSub?14:6}" y="${ry+ROW_H/2+4}"
-      font-size="${isMile?9:isSub?9:11}"
-      font-weight="${isMile?'700':isSub?'400':'600'}"
-      fill="${isMile?ph.color:'#343a40'}">${ph.label}</text>`;
-
-    // Separador fila
-    svg += `<line x1="0" y1="${ry+ROW_H}" x2="${TOTAL_W}" y2="${ry+ROW_H}" stroke="#e9ecef" stroke-width="0.5"/>`;
-
-    if (ph.tipo === 'milestone') {
-      const mx = px(ph.s); const my = ry + ROW_H/2; const r = 7;
-      svg += `<polygon points="${mx},${my-r} ${mx+r},${my} ${mx},${my+r} ${mx-r},${my}" fill="${ph.color}" opacity="0.92"/>`;
-      svg += `<line x1="${mx}" y1="${HDR_H}" x2="${mx}" y2="${HDR_H+bodyH}" stroke="${ph.color}" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
-    } else {
-      const bx = px(ph.s) + 1;
-      const endX = px(ph.e) - 1;
-      const bw = endX - bx;
-      const bh = ph.tipo === 'sub' ? ROW_H*0.44 : ROW_H*0.60;
-      const by2 = ry + (ROW_H - bh)/2;
-      const rx2 = 3;
-
-      // Para barras que cruzan la línea de 180 dh: dos segmentos
-      if (ph.e > IMPL_W) {
-        // Segmento implementación (hasta 180 dh)
-        const midX = px(IMPL_W) - 1;
-        if (ph.s < IMPL_W) {
-          const w1 = midX - bx;
-          svg += `<rect x="${bx}" y="${by2}" width="${w1}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.85"/>`;
-        }
-        // Segmento años (después 180 dh) — más transparente y con texto "AÑOS"
-        const ax = px(IMPL_W) + 2;
-        const aw = endX - ax;
-        svg += `<rect x="${ax}" y="${by2}" width="${aw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="0.45"/>`;
-        // Flechas de continuación
-        svg += `<text x="${ax+aw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="${ph.color}" font-weight="700" opacity="0.9">► ${OP_YEARS} años</text>`;
-      } else {
-        svg += `<rect x="${bx}" y="${by2}" width="${bw}" height="${bh}" rx="${rx2}" fill="${ph.color}" opacity="${ph.tipo==='sub'?0.55:0.85}"/>`;
-        if (bw > 35) {
-          svg += `<text x="${bx+bw/2}" y="${by2+bh/2+4}" text-anchor="middle" font-size="9" fill="white" font-weight="600">${ph.e-ph.s}s</text>`;
-        }
-      }
-    }
-  });
-
-  // Línea INICIO y línea 180dh (sobre filas)
-  svg += `<line x1="${LABEL_W}" y1="${HDR_H}" x2="${LABEL_W}" y2="${HDR_H+bodyH}" stroke="#107c10" stroke-width="2"/>`;
-  svg += `<rect x="${LABEL_W}" y="${HDR_H}" width="36" height="14" rx="3" fill="#107c10"/>`;
-  svg += `<text x="${LABEL_W+18}" y="${HDR_H+10}" text-anchor="middle" font-size="8" fill="white" font-weight="700">INICIO</text>`;
-  svg += `<line x1="${px(IMPL_W)}" y1="${HDR_H}" x2="${px(IMPL_W)}" y2="${HDR_H+bodyH}" stroke="#d13438" stroke-width="2"/>`;
-
-  svg += '</svg>';
-
-  // ── Tabla detalle ────────────────────────────────────────────────────────
-  const rows = phases.filter(p => p.tipo !== 'sub').map(ph => {
-    const durW  = ph.e <= IMPL_W ? `${ph.e-ph.s} sem` : `${ph.e <= IMPL_W ? ph.e-ph.s : IMPL_W-ph.s} sem + ${OP_YEARS} años`;
-    const durDH = ph.tipo==='milestone' ? '—' : ph.e<=IMPL_W ? `~${(ph.e-ph.s)*5} dh` : `~${(IMPL_W-ph.s)*5} dh + 48 meses`;
-    const tipo = {prep:'Preparación',fase:'Implementación',milestone:'Hito',pool:'Pool Evolutivo',operacion:'Operación'}[ph.tipo]||ph.tipo;
-    return `<tr>
-      <td style="padding:7px 10px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${ph.color};margin-right:6px;vertical-align:middle"></span><strong>${ph.label}</strong></td>
-      <td style="padding:7px 10px;color:var(--gray-5);font-size:12px">${tipo}</td>
-      <td style="padding:7px 10px;font-size:12px;white-space:nowrap">S${ph.s+1}${ph.tipo!=='milestone'?` → ${ph.e>IMPL_W?'Año '+OP_YEARS:'S'+ph.e}`:''}</td>
-      <td style="padding:7px 10px;font-size:12px">${durW} / ${durDH}</td>
-      <td style="padding:7px 10px;font-size:11px;color:var(--gray-5)">${ph.detail}</td>
-    </tr>`;
-  }).join('');
-
-  el.innerHTML = `
-    <div style="padding:16px 20px">
-      <!-- Alertas RFP -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
-          ⏱️ <strong>Fase 1:</strong> máx <strong style="color:#d13438">40 días hábiles</strong> (8 semanas) · Go-Live Big Bang 400 usuarios
-        </div>
-        <div style="padding:8px 14px;background:#fde7e9;border:1px solid #f4a4a7;border-radius:6px;font-size:12px">
-          📅 <strong>Total Impl.:</strong> máx <strong style="color:#d13438">180 días hábiles</strong> (36 sem) · fases paralelas (Mod. N°4)
-        </div>
-        <div style="padding:8px 14px;background:#dff6dd;border:1px solid #9ddb9d;border-radius:6px;font-size:12px">
-          ✅ <strong>Propuesta W-it:</strong> implementación completa en <strong style="color:#107c10">~130 dh</strong> (26 sem) · buffer 50 dh disponibles
-        </div>
-        <div style="padding:8px 14px;background:#fff4ce;border:1px solid #f7ca7a;border-radius:6px;font-size:12px">
-          🔄 <strong>Sprints:</strong> 2 sem c/u · máx 25 · desde Go-Live F1 · <strong>Soporte:</strong> 48 meses
-        </div>
-      </div>
-
-      <!-- Gantt SVG -->
-      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:20px">
-        ${svg}
-      </div>
-
-      <!-- Leyenda -->
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;font-size:12px">
-        ${[['#0078d4','Fase 1 (base)'],['#2b7a3c','Fase 2 Subvenciones'],['#8764b8','Fase 3 Perm. Circ.'],['#d83b01','Fase 4 Veterinaria'],['#107c6e','Fase 5 Talleres'],['#986f0b','Pool Sprints'],['#6c757d','Operación 48m']].map(([c,l])=>`
-          <div style="display:flex;align-items:center;gap:5px">
-            <span style="width:14px;height:10px;background:${c};border-radius:2px;display:inline-block"></span>${l}
-          </div>`).join('')}
-      </div>
-
-      <!-- Tabla detalle -->
-      <div style="background:white;border:1px solid var(--gray-3);border-radius:8px;overflow:hidden">
-        <div style="padding:12px 16px;background:var(--gray-1);border-bottom:1px solid var(--gray-2)">
-          <strong style="font-size:13px">Detalle por Fase</strong>
-          <span style="font-size:11px;color:var(--gray-5);margin-left:8px">según Bases CRM ID 2345-55-LR26 + Modificaciones 1, 4 + Respuestas foro</span>
-        </div>
-        <div style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            <thead>
-              <tr style="background:var(--gray-1)">
-                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Fase / Hito</th>
-                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Tipo</th>
-                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Semanas</th>
-                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Duración</th>
-                <th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--gray-5);border-bottom:2px solid var(--gray-3)">Alcance y notas clave (RFP + consultas)</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>`;
-}
-
-window.addEventListener('DOMContentLoaded', init);
-
-// Update UF info label on uf-rate change
-document.addEventListener('DOMContentLoaded', () => {
-  const ufIn = document.getElementById('uf-rate');
-  if (ufIn) {
-    ufIn.addEventListener('input', () => {
-      const infoEl = document.getElementById('global-uf-info');
-      if (infoEl) infoEl.textContent = `Referencia: 1.000 UF = ${clp(1000*Number(ufIn.value))}`;
-    });
-  }
-});
-</script>
-</body>
-</html>
+  // ── Config de grupos de fase ──────────────────────────────────────────
+  const GH = 22;  // altura del encabezado de grupo (px)
+  const GROUPS = {
+    'Fase 1':    { color:'#0078d4', bg:'#daeaf8', label:'FASE 1 — CRM Base + Subsidios + Usuarios  ·  Ítems 1 y 8  ·  máx 40 días hábiles' },
+    'Fase 2':    { color:'#2b7a3c', bg:'#d4f0db', label:'FASE 2 — Implementación Procesos  ·  Ítems 2, 3, 4, 5  ·  fases paralelas (Mod. N°4)' },
+    'Operación': { color:'#986f0b', bg:'#fef0ce', label:'OPERACIÓN  ·  Ítems 6 y 7  ·  Soporte 48 meses + Pool Sprints 26.545 UTM' },
+  };
