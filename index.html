@@ -29,7 +29,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Tailwind Config -->
     <script>
@@ -37,28 +37,59 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Space Grotesk', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        azure: {
-                            400: '#0078D4',
-                            500: '#005ba1',
-                        },
                         dark: {
-                            900: '#0B0F19',
-                            800: '#111827',
-                            700: '#1F2937',
+                            950: '#03060f',
+                            900: '#050810',
+                            800: '#080d1a',
+                            700: '#0d1526',
                         }
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'aurora': 'aurora 18s ease-in-out infinite alternate',
+                        'aurora2': 'aurora2 22s ease-in-out infinite alternate',
+                        'gradient-x': 'gradient-x 5s ease infinite',
+                        'spin-slow': 'spin 25s linear infinite',
+                        'border-glow': 'border-glow 3s ease-in-out infinite',
+                        'wa-ping': 'wa-ping 3s ease-in-out infinite',
+                        'slide-up': 'slide-up 0.6s ease-out forwards',
                     },
                     keyframes: {
                         float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        }
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-18px)' },
+                        },
+                        aurora: {
+                            '0%':   { transform: 'translate(0%, 0%) scale(1)',     opacity: '0.5' },
+                            '33%':  { transform: 'translate(6%, 4%) scale(1.12)',  opacity: '0.7' },
+                            '66%':  { transform: 'translate(-4%, 7%) scale(0.93)', opacity: '0.4' },
+                            '100%': { transform: 'translate(3%, -5%) scale(1.06)', opacity: '0.6' },
+                        },
+                        aurora2: {
+                            '0%':   { transform: 'translate(0%, 0%) scale(1)',      opacity: '0.4' },
+                            '50%':  { transform: 'translate(-8%, -4%) scale(1.15)', opacity: '0.6' },
+                            '100%': { transform: 'translate(5%, 6%) scale(0.9)',    opacity: '0.3' },
+                        },
+                        'gradient-x': {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%':      { backgroundPosition: '100% 50%' },
+                        },
+                        'border-glow': {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(59,130,246,0.3)' },
+                            '50%':      { boxShadow: '0 0 30px rgba(59,130,246,0.6), 0 0 60px rgba(59,130,246,0.2)' },
+                        },
+                        'wa-ping': {
+                            '0%, 100%': { boxShadow: '0 4px 20px rgba(37,211,102,0.4), 0 0 0 0 rgba(37,211,102,0.3)' },
+                            '50%':      { boxShadow: '0 4px 30px rgba(37,211,102,0.6), 0 0 0 14px rgba(37,211,102,0)' },
+                        },
+                        'slide-up': {
+                            '0%':   { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
                     }
                 }
             }
@@ -66,441 +97,1121 @@
     </script>
 
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
-            background-color: #0B0F19;
+            background-color: #050810;
             color: #ffffff;
+            overflow-x: hidden;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        /* ── Scroll progress bar ── */
+        #scroll-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4, #8b5cf6);
+            z-index: 9999;
+            box-shadow: 0 0 12px rgba(59,130,246,0.8);
+            transition: width 0.08s linear;
         }
+
+        /* ── Custom scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050810; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #1d4ed8, #0891b2); border-radius: 3px; }
+
+        html { scroll-behavior: smooth; }
+
+        /* ── Gradient text ── */
         .text-gradient {
-            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #818cf8 100%);
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-x 5s ease infinite;
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0B0F19; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #374151; }
-        html { scroll-behavior: smooth; }
-        .whatsapp-btn {
+
+        /* ── Glass card ── */
+        .glass-card {
+            background: rgba(8, 13, 26, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* ── Spotlight card ── */
+        .spotlight-card {
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        .spotlight-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                500px circle at var(--mx, 50%) var(--my, 50%),
+                rgba(59,130,246,0.13),
+                transparent 55%
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s;
+            z-index: 1;
+        }
+        .spotlight-card:hover::after { opacity: 1; }
+
+        /* ── Animated gradient border ── */
+        .glow-border {
+            position: relative;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(59,130,246,0.6), rgba(6,182,212,0.4), rgba(139,92,246,0.5), rgba(59,130,246,0));
+            background-size: 300% 300%;
+            animation: gradient-x 4s ease infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+        .glow-border:hover::before { opacity: 1; }
+
+        /* ── Scroll reveal ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-32px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+        .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(32px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+        .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+        /* ── Section divider ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.25), rgba(6,182,212,0.2), transparent);
+        }
+
+        /* ── Shimmer button ── */
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -60%;
+            width: 40%; height: 200%;
+            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+            transform: skewX(-15deg);
+            transition: left 0.6s ease;
+        }
+        .btn-shine:hover::before { left: 130%; }
+
+        /* ── Hero grid ── */
+        .hero-grid {
+            background-image:
+                linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ── Typewriter cursor ── */
+        .tw-cursor {
+            display: inline-block;
+            width: 3px;
+            height: 0.85em;
+            background: #38bdf8;
+            margin-left: 4px;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* ── Nav underline ── */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -3px; left: 0;
+            width: 0; height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            border-radius: 1px;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── Scroll indicator ── */
+        @keyframes scroll-mouse {
+            0%   { transform: translateY(0);   opacity: 1; }
+            60%  { transform: translateY(8px);  opacity: 0.5; }
+            100% { transform: translateY(0);   opacity: 1; }
+        }
+        .scroll-dot { animation: scroll-mouse 2s ease-in-out infinite; }
+
+        /* ── WhatsApp ── */
+        .wa-btn {
             position: fixed;
-            bottom: 28px;
-            right: 28px;
+            bottom: 28px; right: 28px;
             z-index: 999;
-            background: #25D366;
+            background: linear-gradient(135deg, #25D366, #128C7E);
             border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.5);
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 58px; height: 58px;
+            display: flex; align-items: center; justify-content: center;
+            animation: wa-ping 3s ease-in-out infinite;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .whatsapp-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 28px rgba(37, 211, 102, 0.7);
+        .wa-btn:hover { transform: scale(1.18) rotate(8deg); }
+
+        /* ── Badge ── */
+        .badge-pulse {
+            box-shadow: 0 0 20px rgba(59,130,246,0.35);
+        }
+
+        /* ── Step connector ── */
+        @media (min-width: 768px) {
+            .step-card:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                top: 50%; right: -30%;
+                width: 60%; height: 1px;
+                background: linear-gradient(90deg, rgba(59,130,246,0.4), transparent);
+                transform: translateY(-50%);
+            }
+        }
+        .step-card { position: relative; }
+
+        /* ── Input focus ── */
+        .input-field {
+            width: 100%;
+            background: #050810;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-field::placeholder { color: rgba(255,255,255,0.25); }
+        .input-field:focus {
+            border-color: rgba(59,130,246,0.6);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15), 0 0 20px rgba(59,130,246,0.08);
+        }
+
+        /* ── Noise overlay (subtle texture) ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        /* ── CTA section gradient ── */
+        .cta-bg {
+            background: linear-gradient(135deg, #0f1e4a 0%, #050810 50%, #0a1628 100%);
+            position: relative;
+        }
+        .cta-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 70% 30%, rgba(59,130,246,0.12) 0%, transparent 60%);
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-bar"></div>
+
     <div id="root"></div>
 
+    <script>
+        // Scroll progress + parallax
+        window.addEventListener('scroll', () => {
+            const bar = document.getElementById('scroll-bar');
+            if (bar) {
+                const total = document.body.scrollHeight - window.innerHeight;
+                bar.style.width = (window.scrollY / total * 100) + '%';
+            }
+            // Parallax background images
+            document.querySelectorAll('.parallax-bg').forEach(el => {
+                const section = el.closest('section') || el.parentElement;
+                const rect = section.getBoundingClientRect();
+                if (rect.bottom < -100 || rect.top > window.innerHeight + 100) return;
+                const speed = parseFloat(el.dataset.speed || 0.25);
+                const offset = (rect.top + rect.height / 2 - window.innerHeight / 2) * speed;
+                el.style.transform = `translateY(${offset}px)`;
+            });
+        }, { passive: true });
+    </script>
+
     <script type="text/babel">
-        // Icons Component (SVG Inline)
+
+        /* ================================================================
+           ICONS
+        ================================================================ */
         const Icons = {
-            Cloud: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19c0-1.7-1.3-3-3-3h-11c-1.7 0-3 1.3-3 3s1.3 3 3 3h11c1.7 0 3-1.3 3-3z"/><path d="M17.5 19a6 6 0 0 0-4-11.65"/><path d="M5.5 19a4 4 0 0 1-1.35-7.65"/></svg>,
-            Shield: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
-            Server: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>,
-            Code: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
-            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
-            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            ArrowRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
-            Database: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
-            Cpu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>,
-            Brain: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
-            Chart: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>,
-            FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>,
-            Users: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-            Award: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>,
-            Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-            Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-            LinkedIn: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>,
-            Twitter: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
+            Cloud:     () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19c0-1.7-1.3-3-3-3h-11c-1.7 0-3 1.3-3 3s1.3 3 3 3h11c1.7 0 3-1.3 3-3z"/><path d="M17.5 19a6 6 0 0 0-4-11.65"/><path d="M5.5 19a4 4 0 0 1-1.35-7.65"/></svg>,
+            Shield:    () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+            Server:    () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>,
+            Code:      () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+            Check:     () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            Menu:      () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+            X:         () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            ArrowRight:() => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+            Database:  () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
+            Cpu:       () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>,
+            Brain:     () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
+            Chart:     () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>,
+            FileText:  () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>,
+            Users:     () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            Award:     () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>,
+            Target:    () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+            Zap:       () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            LinkedIn:  () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>,
+            Twitter:   () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
             Instagram: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>,
-            WhatsApp: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+            WhatsApp:  () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>,
         };
 
-        const Navbar = () => {
-            const [isOpen, setIsOpen] = React.useState(false);
-            const closeMenu = () => setIsOpen(false);
+        /* ================================================================
+           PARTICLE CANVAS
+        ================================================================ */
+        const ParticleCanvas = () => {
+            const ref = React.useRef(null);
+
+            React.useEffect(() => {
+                const canvas = ref.current;
+                const ctx = canvas.getContext('2d');
+                let animId;
+                let mx = -9999, my = -9999;
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                const resize = () => {
+                    canvas.width  = canvas.offsetWidth  * dpr;
+                    canvas.height = canvas.offsetHeight * dpr;
+                    ctx.scale(dpr, dpr);
+                };
+                resize();
+
+                const W = () => canvas.offsetWidth;
+                const H = () => canvas.offsetHeight;
+
+                const N = window.innerWidth < 768 ? 35 : 65;
+                const pts = Array.from({ length: N }, () => ({
+                    x:  Math.random() * W(),
+                    y:  Math.random() * H(),
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: (Math.random() - 0.5) * 0.35,
+                    r:  Math.random() * 1.5 + 0.5,
+                    a:  Math.random() * 0.5 + 0.2,
+                }));
+
+                const onMove = e => { mx = e.clientX; my = e.clientY; };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('resize', resize);
+
+                const LINK = 140;
+                const REPEL = 160;
+
+                const draw = () => {
+                    ctx.clearRect(0, 0, W(), H());
+
+                    pts.forEach(p => {
+                        const dx = p.x - mx, dy = p.y - my;
+                        const d = Math.sqrt(dx*dx + dy*dy);
+                        if (d < REPEL) {
+                            const f = (REPEL - d) / REPEL * 0.18;
+                            p.vx += (dx / d) * f;
+                            p.vy += (dy / d) * f;
+                        }
+                        p.vx *= 0.978; p.vy *= 0.978;
+                        p.x += p.vx; p.y += p.vy;
+                        if (p.x < 0) p.x = W(); else if (p.x > W()) p.x = 0;
+                        if (p.y < 0) p.y = H(); else if (p.y > H()) p.y = 0;
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(56,189,248,${p.a})`;
+                        ctx.fill();
+                    });
+
+                    for (let i = 0; i < pts.length; i++) {
+                        for (let j = i + 1; j < pts.length; j++) {
+                            const dx = pts[i].x - pts[j].x;
+                            const dy = pts[i].y - pts[j].y;
+                            const d  = Math.sqrt(dx*dx + dy*dy);
+                            if (d < LINK) {
+                                ctx.beginPath();
+                                ctx.moveTo(pts[i].x, pts[i].y);
+                                ctx.lineTo(pts[j].x, pts[j].y);
+                                ctx.strokeStyle = `rgba(59,130,246,${(1-d/LINK)*0.18})`;
+                                ctx.lineWidth = 1;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                    animId = requestAnimationFrame(draw);
+                };
+                draw();
+
+                return () => {
+                    cancelAnimationFrame(animId);
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('resize', resize);
+                };
+            }, []);
 
             return (
-                <nav className="fixed w-full z-50 top-0 start-0 border-b border-gray-800 bg-dark-900/90 backdrop-blur-md">
-                    <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between p-4">
-                        <a href="#" className="flex items-center space-x-2 rtl:space-x-reverse">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                                <span className="font-bold text-lg">T</span>
-                            </div>
-                            <span className="self-center text-2xl font-bold whitespace-nowrap text-white">TyC <span className="text-blue-500">Digital</span></span>
-                        </a>
-                        <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                            <a href="#contacto" className="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-sm px-4 py-2 text-center transition-all shadow-[0_0_15px_rgba(37,99,235,0.5)] hover:shadow-[0_0_25px_rgba(37,99,235,0.7)]">
-                                Agendar Asesoría
-                            </a>
-                            <button
-                                onClick={() => setIsOpen(!isOpen)}
-                                type="button"
-                                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
-                            >
-                                <span className="sr-only">Abrir menú</span>
-                                {isOpen ? <Icons.X /> : <Icons.Menu />}
-                            </button>
+                <canvas ref={ref} style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    opacity: 0.45, pointerEvents: 'none',
+                }} />
+            );
+        };
+
+        /* ================================================================
+           TYPEWRITER
+        ================================================================ */
+        const TypeWriter = ({ words }) => {
+            const [wIdx, setWIdx]     = React.useState(0);
+            const [text, setText]     = React.useState('');
+            const [deleting, setDel]  = React.useState(false);
+
+            React.useEffect(() => {
+                const word = words[wIdx];
+                let t;
+                if (!deleting) {
+                    if (text.length < word.length) {
+                        t = setTimeout(() => setText(word.slice(0, text.length + 1)), 75);
+                    } else {
+                        t = setTimeout(() => setDel(true), 2800);
+                    }
+                } else {
+                    if (text.length > 0) {
+                        t = setTimeout(() => setText(text.slice(0, -1)), 38);
+                    } else {
+                        setDel(false);
+                        setWIdx((wIdx + 1) % words.length);
+                    }
+                }
+                return () => clearTimeout(t);
+            }, [text, deleting, wIdx, words]);
+
+            return (
+                <span className="text-gradient">
+                    {text}<span className="tw-cursor" />
+                </span>
+            );
+        };
+
+        /* ================================================================
+           COUNT-UP
+        ================================================================ */
+        const CountUp = ({ to, suffix = '', duration = 1800 }) => {
+            const [n, setN]   = React.useState(0);
+            const [on, setOn] = React.useState(false);
+            const ref = React.useRef(null);
+
+            React.useEffect(() => {
+                const obs = new IntersectionObserver(([e]) => {
+                    if (e.isIntersecting) { setOn(true); obs.disconnect(); }
+                }, { threshold: 0.5 });
+                if (ref.current) obs.observe(ref.current);
+                return () => obs.disconnect();
+            }, []);
+
+            React.useEffect(() => {
+                if (!on) return;
+                let start = null;
+                const step = ts => {
+                    if (!start) start = ts;
+                    const p = Math.min((ts - start) / duration, 1);
+                    const e = 1 - Math.pow(1 - p, 3);
+                    setN(Math.floor(e * to));
+                    if (p < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            }, [on]);
+
+            return <span ref={ref}>{n}{suffix}</span>;
+        };
+
+        /* ================================================================
+           AZURE DASHBOARD (hero visualization elegante)
+        ================================================================ */
+        const AzureDashboard = () => {
+            const lineRef  = React.useRef(null);
+            const line2Ref = React.useRef(null);
+
+            React.useEffect(() => {
+                [lineRef, line2Ref].forEach((r, i) => {
+                    const el = r.current;
+                    if (!el) return;
+                    const len = el.getTotalLength();
+                    el.style.strokeDasharray  = len;
+                    el.style.strokeDashoffset = len;
+                    setTimeout(() => {
+                        el.style.transition = `stroke-dashoffset ${1.8 + i * 0.4}s cubic-bezier(0.4,0,0.2,1)`;
+                        el.style.strokeDashoffset = '0';
+                    }, 300 + i * 200);
+                });
+            }, []);
+
+            return (
+                <div className="glass-card rounded-2xl overflow-hidden border border-white/6 shadow-2xl shadow-blue-950/60">
+                    {/* Header bar */}
+                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/50" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-green-400/50" />
                         </div>
-                        <div className={`${isOpen ? 'block' : 'hidden'} items-center justify-between w-full md:flex md:w-auto md:order-1`}>
-                            <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-700 rounded-lg bg-dark-800 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-transparent">
-                                <li><a href="#servicios" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Servicios</a></li>
-                                <li><a href="#servicios" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Infraestructura</a></li>
-                                <li><a href="#seguridad" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Seguridad</a></li>
-                                <li><a href="#programas" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Programas</a></li>
-                                <li><a href="#nosotros" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Nosotros</a></li>
-                                <li><a href="#contacto" onClick={closeMenu} className="block py-2 px-3 text-gray-300 rounded hover:bg-gray-700 md:hover:bg-transparent md:hover:text-blue-500 md:p-0 transition-colors">Contacto</a></li>
-                            </ul>
+                        <span className="text-xs text-gray-600 font-mono tracking-wide">Azure Cloud Dashboard · TyC Digital</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inset-0 rounded-full bg-green-400 opacity-60" />
+                                <span className="relative rounded-full h-2 w-2 bg-green-400" />
+                            </span>
+                            <span className="text-xs text-green-400 font-medium">Live</span>
                         </div>
                     </div>
+
+                    {/* Metric tiles */}
+                    <div className="grid grid-cols-3 border-b border-white/5">
+                        {[
+                            { label: 'Ahorro mensual',   value: <><CountUp to={42} prefix="$" suffix="K" /></>, delta: '↑ 18%',   color: '#34d399' },
+                            { label: 'Uptime SLA',       value: <><CountUp to={99} suffix=".9%" /></>,          delta: 'Gold SLA', color: '#60a5fa' },
+                            { label: 'Security Score',   value: <><CountUp to={94} suffix="/100" /></>,          delta: '+12 pts',  color: '#c084fc' },
+                        ].map((m, i) => (
+                            <div key={i} className={`px-5 py-4 ${i < 2 ? 'border-r border-white/5' : ''}`}>
+                                <p className="text-xs text-gray-500 mb-1.5 font-medium">{m.label}</p>
+                                <p className="text-xl font-bold tracking-tight" style={{ color: m.color }}>{m.value}</p>
+                                <p className="text-xs mt-1" style={{ color: m.color, opacity: 0.6 }}>{m.delta}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Chart area */}
+                    <div className="px-5 pt-4 pb-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-gray-500 font-medium uppercase tracking-widest">Optimización de Costos Cloud</span>
+                            <span className="text-xs text-blue-400 font-semibold">Últimos 6 meses</span>
+                        </div>
+                        <svg viewBox="0 0 420 90" className="w-full" style={{ height: '80px' }}>
+                            <defs>
+                                <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%"   stopColor="#3b82f6" />
+                                    <stop offset="100%" stopColor="#06b6d4" />
+                                </linearGradient>
+                                <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%"   stopColor="#8b5cf6" stopOpacity="0.7" />
+                                    <stop offset="100%" stopColor="#ec4899" stopOpacity="0.5" />
+                                </linearGradient>
+                                <linearGradient id="areag" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%"   stopColor="#3b82f6" stopOpacity="0.2" />
+                                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0"   />
+                                </linearGradient>
+                            </defs>
+                            {/* Grid lines */}
+                            {[22,44,66].map(y => (
+                                <line key={y} x1="0" y1={y} x2="420" y2={y}
+                                    stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                            ))}
+                            {/* Area fill */}
+                            <path d="M0,78 C40,70 80,68 120,50 C160,32 200,28 240,22 C280,16 320,12 360,8 L420,6 L420,90 L0,90 Z"
+                                fill="url(#areag)" />
+                            {/* Main line */}
+                            <path ref={lineRef}
+                                d="M0,78 C40,70 80,68 120,50 C160,32 200,28 240,22 C280,16 320,12 360,8 L420,6"
+                                fill="none" stroke="url(#lg1)" strokeWidth="2.5"
+                                strokeLinecap="round" strokeLinejoin="round" />
+                            {/* Secondary line */}
+                            <path ref={line2Ref}
+                                d="M0,85 C40,82 80,80 120,75 C160,68 200,62 240,55 C280,48 320,40 360,35 L420,30"
+                                fill="none" stroke="url(#lg2)" strokeWidth="1.5"
+                                strokeLinecap="round" strokeLinejoin="round" strokeDasharray="none" />
+                            {/* Animated dot at end of main line */}
+                            <circle cx="420" cy="6" r="4" fill="#06b6d4">
+                                <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="420" cy="6" r="8" fill="none" stroke="#06b6d4" strokeWidth="1" opacity="0.3">
+                                <animate attributeName="r" values="6;12;6" dur="2s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                        </svg>
+                    </div>
+
+                    {/* Status items */}
+                    <div className="grid grid-cols-2 gap-2 px-5 pb-5">
+                        {[
+                            { label: 'Migración IaaS',     status: 'done',    color: '#34d399' },
+                            { label: 'Auditoría Security', status: 'active',  color: '#60a5fa' },
+                            { label: 'Deploy IA Agents',   status: 'active',  color: '#c084fc' },
+                            { label: 'FinOps Review',      status: 'pending', color: '#6b7280' },
+                        ].map((item, i) => (
+                            <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-white/5 bg-white/2">
+                                <div className="w-2 h-2 rounded-full shrink-0"
+                                    style={{
+                                        background: item.color,
+                                        boxShadow: item.status !== 'pending' ? `0 0 6px ${item.color}` : 'none',
+                                    }} />
+                                <span className="text-xs text-gray-400">{item.label}</span>
+                                <span className="ml-auto text-xs font-mono" style={{ color: item.color, opacity: 0.7 }}>
+                                    {item.status === 'done' ? '✓' : item.status === 'active' ? '●' : '○'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        /* ================================================================
+           SCROLL REVEAL HOOK (global, runs after all components mount)
+        ================================================================ */
+        const useScrollReveal = () => {
+            React.useEffect(() => {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const el = entry.target;
+                            const delay = parseInt(el.dataset.delay || '0');
+                            setTimeout(() => el.classList.add('visible'), delay);
+                            obs.unobserve(el);
+                        }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+                document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
+                    .forEach(el => obs.observe(el));
+
+                return () => obs.disconnect();
+            }, []);
+        };
+
+        /* ================================================================
+           NAVBAR
+        ================================================================ */
+        const Navbar = () => {
+            const [open, setOpen]       = React.useState(false);
+            const [scrolled, setScroll] = React.useState(false);
+            const close = () => setOpen(false);
+
+            React.useEffect(() => {
+                const h = () => setScroll(window.scrollY > 40);
+                window.addEventListener('scroll', h, { passive: true });
+                return () => window.removeEventListener('scroll', h);
+            }, []);
+
+            const links = [
+                { href: '#servicios',  label: 'Servicios' },
+                { href: '#servicios',  label: 'Infraestructura' },
+                { href: '#seguridad',  label: 'Seguridad' },
+                { href: '#programas',  label: 'Programas' },
+                { href: '#nosotros',   label: 'Nosotros' },
+                { href: '#contacto',   label: 'Contacto' },
+            ];
+
+            return (
+                <nav className={`fixed w-full z-50 top-0 transition-all duration-400 ${
+                    scrolled
+                        ? 'border-b border-white/5 bg-dark-900/92 backdrop-blur-2xl shadow-xl shadow-black/30'
+                        : 'bg-transparent'
+                }`}>
+                    <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+                        {/* Logo */}
+                        <a href="#" className="flex items-center gap-3 group">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-shadow">
+                                <span className="font-bold text-white text-lg">T</span>
+                            </div>
+                            <span className="text-2xl font-bold text-white tracking-tight">
+                                TyC <span className="text-gradient">Digital</span>
+                            </span>
+                        </a>
+
+                        {/* Desktop links */}
+                        <ul className="hidden md:flex items-center gap-8">
+                            {links.map(l => (
+                                <li key={l.href + l.label}>
+                                    <a href={l.href} onClick={close}
+                                        className="nav-link text-sm text-gray-300 hover:text-white transition-colors font-medium">
+                                        {l.label}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+
+                        {/* CTA + hamburger */}
+                        <div className="flex items-center gap-3">
+                            <a href="#contacto"
+                                className="btn-shine hidden md:inline-flex items-center gap-2 text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-cyan-500 font-semibold rounded-xl text-sm px-5 py-2.5 shadow-lg shadow-blue-500/25 transition-all hover:shadow-blue-500/45 hover:scale-105">
+                                Agendar Asesoría
+                            </a>
+                            <button onClick={() => setOpen(!open)}
+                                className="md:hidden p-2 rounded-xl text-gray-400 hover:bg-white/8 transition-colors">
+                                {open ? <Icons.X /> : <Icons.Menu />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile menu */}
+                    {open && (
+                        <div className="md:hidden border-t border-white/5 bg-dark-900/98 backdrop-blur-xl px-6 py-4">
+                            <ul className="flex flex-col gap-1">
+                                {links.map(l => (
+                                    <li key={l.href + l.label}>
+                                        <a href={l.href} onClick={close}
+                                            className="block py-3 px-4 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium">
+                                            {l.label}
+                                        </a>
+                                    </li>
+                                ))}
+                                <li className="mt-3">
+                                    <a href="#contacto" onClick={close}
+                                        className="btn-shine block text-center text-white bg-gradient-to-r from-blue-600 to-blue-500 font-semibold rounded-xl text-sm px-5 py-3">
+                                        Agendar Asesoría
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                 </nav>
             );
         };
 
-        const Hero = () => {
-            return (
-                <section className="relative pt-32 pb-20 lg:pt-48 overflow-hidden">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0 pointer-events-none">
-                        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-600/20 rounded-full blur-[100px] animate-pulse-slow"></div>
-                        <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+        /* ================================================================
+           HERO
+        ================================================================ */
+        const Hero = () => (
+            <section className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+                {/* Background image with parallax */}
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                    <div className="parallax-bg absolute inset-[-80px]" data-speed="0.22" style={{
+                        backgroundImage: 'url(https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=80)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        willChange: 'transform',
+                    }} />
+                    {/* Layered overlay: preserves brand colors + legibility */}
+                    <div className="absolute inset-0" style={{
+                        background: 'linear-gradient(135deg, rgba(5,8,16,0.88) 0%, rgba(5,8,16,0.72) 50%, rgba(5,8,16,0.90) 100%)',
+                    }} />
+                    <div className="absolute inset-0" style={{
+                        background: 'radial-gradient(ellipse 60% 60% at 50% 40%, rgba(29,78,216,0.18) 0%, transparent 70%)',
+                    }} />
+                </div>
+
+                {/* Particles */}
+                <ParticleCanvas />
+
+                {/* Aurora blobs */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                    <div className="absolute -top-48 -left-48 w-[700px] h-[700px] bg-blue-700/8 rounded-full blur-[130px] animate-aurora" />
+                    <div className="absolute top-1/3 -right-32 w-[550px] h-[550px] bg-cyan-600/7 rounded-full blur-[110px] animate-aurora2" />
+                    <div className="absolute -bottom-48 left-1/4 w-[500px] h-[500px] bg-indigo-700/7 rounded-full blur-[110px] animate-aurora" style={{animationDelay:'-8s'}} />
+                </div>
+
+                {/* Grid */}
+                <div className="absolute inset-0 hero-grid z-0" />
+
+                {/* Radial vignette */}
+                <div className="absolute inset-0 z-0" style={{
+                    background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, #050810 85%)'
+                }} />
+
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
+                    {/* Partner badge */}
+                    <div className="reveal inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-sm font-semibold mb-10 backdrop-blur-sm badge-pulse" data-delay="0">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inset-0 rounded-full bg-blue-400 opacity-70" />
+                            <span className="relative rounded-full h-2.5 w-2.5 bg-blue-400" />
+                        </span>
+                        Azure Gold Partner · Microsoft Cloud
                     </div>
 
-                    <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-sm font-semibold mb-8 backdrop-blur-sm">
-                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                            Azure Gold Partners
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
-                            Acelera tu <br/>
-                            <span className="text-gradient">Transformación Cloud</span>
-                        </h1>
-                        <p className="mt-4 text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                            En TyC Digital, simplificamos la adopción de Azure. Desde migraciones IaaS hasta modernización PaaS y seguridad avanzada. Tu socio estratégico en la nube.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="mailto:contacto@tycdigital.cl" className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2">
-                                Auditoría Gratuita <Icons.ArrowRight />
-                            </a>
-                            <a href="#servicios" className="w-full sm:w-auto px-8 py-4 bg-transparent border border-gray-700 hover:border-blue-500 rounded-lg font-bold text-gray-300 hover:text-white transition-all text-center">
-                                Ver Nuestros Servicios
-                            </a>
-                        </div>
+                    {/* Headline */}
+                    <h1 className="reveal text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight mb-8 leading-[1.05]" data-delay="80">
+                        <span className="block text-white mb-1">Acelera tu</span>
+                        <TypeWriter words={['Transformación Cloud','Migración Azure','Seguridad Avanzada','IA Generativa']} />
+                    </h1>
 
-                        {/* Tech Stack Visual */}
-                        <div className="mt-20 relative mx-auto max-w-4xl">
-                            <div className="glass-card rounded-xl p-2 border border-gray-800 shadow-2xl">
-                                <div className="bg-dark-900 rounded-lg overflow-hidden relative h-64 md:h-80 flex items-center justify-center border border-gray-800">
-                                    <div className="grid grid-cols-3 gap-8 md:gap-16 opacity-80">
-                                        <div className="flex flex-col items-center gap-2 animate-float" style={{animationDelay: '0s'}}>
-                                            <div className="p-4 bg-blue-900/20 rounded-xl border border-blue-500/20 text-blue-400"><Icons.Server /></div>
-                                            <span className="text-xs text-gray-500 font-mono">IaaS</span>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-2 animate-float" style={{animationDelay: '1s'}}>
-                                            <div className="p-4 bg-cyan-900/20 rounded-xl border border-cyan-500/20 text-cyan-400"><Icons.Database /></div>
-                                            <span className="text-xs text-gray-500 font-mono">PaaS</span>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-2 animate-float" style={{animationDelay: '2s'}}>
-                                            <div className="p-4 bg-indigo-900/20 rounded-xl border border-indigo-500/20 text-indigo-400"><Icons.Shield /></div>
-                                            <span className="text-xs text-gray-500 font-mono">Security</span>
-                                        </div>
+                    {/* Subtitle */}
+                    <p className="reveal text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light" data-delay="160">
+                        En TyC Digital, simplificamos la adopción de Azure. Desde migraciones IaaS hasta
+                        modernización PaaS y seguridad avanzada.{' '}
+                        <span className="text-gray-200 font-medium">Tu socio estratégico en la nube.</span>
+                    </p>
+
+                    {/* CTAs */}
+                    <div className="reveal flex flex-col sm:flex-row gap-4 justify-center items-center mb-20" data-delay="240">
+                        <a href="mailto:contacto@tycdigital.cl"
+                            className="btn-shine w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-cyan-500 rounded-xl font-bold text-white text-lg shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all hover:scale-105 flex items-center justify-center gap-3">
+                            Auditoría Gratuita <Icons.ArrowRight />
+                        </a>
+                        <a href="#servicios"
+                            className="w-full sm:w-auto px-10 py-4 bg-white/5 border border-white/12 hover:border-blue-500/50 hover:bg-white/10 rounded-xl font-bold text-gray-200 hover:text-white transition-all text-center text-lg backdrop-blur-sm">
+                            Ver Nuestros Servicios
+                        </a>
+                    </div>
+
+                    {/* Azure Dashboard visualization */}
+                    <div className="reveal mx-auto max-w-3xl" data-delay="320">
+                        <AzureDashboard />
+                    </div>
+                </div>
+
+                {/* Scroll indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-gray-600">
+                    <span className="text-[10px] font-semibold tracking-[0.2em] uppercase">Scroll</span>
+                    <svg width="20" height="30" viewBox="0 0 20 30" fill="none">
+                        <rect x="1" y="1" width="18" height="28" rx="9" stroke="currentColor" strokeWidth="1.5"/>
+                        <circle cx="10" cy="10" r="3" fill="currentColor" className="scroll-dot"/>
+                    </svg>
+                </div>
+            </section>
+        );
+
+        /* ================================================================
+           STATS
+        ================================================================ */
+        const Stats = () => {
+            const items = [
+                { value: <><CountUp to={100} suffix="%" /></>,  label: "Enfoque Microsoft Cloud",  delay: 0   },
+                { value: '<1h',                                  label: "Respuesta a incidentes",   delay: 100 },
+                { value: 'Azure',                                label: "Gold Partner",             delay: 200 },
+                { value: 'End-to-End',                           label: "Cobertura de servicios",   delay: 300 },
+            ];
+            return (
+                <div>
+                    <div className="divider" />
+                    <div className="py-14" style={{ background:'radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.05) 0%, transparent 70%)' }}>
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                                {items.map((s, i) => (
+                                    <div key={i} className="reveal group" data-delay={s.delay}>
+                                        <p className="text-3xl md:text-4xl font-extrabold mb-2">
+                                            <span className="text-gradient">{s.value}</span>
+                                        </p>
+                                        <p className="text-sm text-gray-500 group-hover:text-gray-400 transition-colors">{s.label}</p>
                                     </div>
-                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-                </section>
-            );
-        };
-
-        const Stats = () => {
-            const stats = [
-                { value: "100%", label: "Enfoque Microsoft Cloud" },
-                { value: "<1h", label: "Respuesta a incidentes" },
-                { value: "Azure", label: "Gold Partner" },
-                { value: "End-to-End", label: "Cobertura de servicios" },
-            ];
-            return (
-                <div className="py-12 border-y border-gray-800/50 bg-dark-800/30">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                            {stats.map((s, i) => (
-                                <div key={i}>
-                                    <p className="text-3xl font-extrabold text-blue-400 mb-1">{s.value}</p>
-                                    <p className="text-sm text-gray-500">{s.label}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <div className="divider" />
                 </div>
             );
         };
 
-        const ServiceCard = ({ icon: Icon, title, description, badge, id }) => (
-            <div id={id} className="glass-card p-8 rounded-2xl hover:border-blue-500/50 transition-all duration-300 group hover:-translate-y-2 relative overflow-hidden h-full flex flex-col">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Icon />
-                </div>
-                <div className="w-12 h-12 bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
-                    <Icon />
-                </div>
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">{title}</h3>
-                    {badge && <span className="text-xs font-mono py-1 px-2 rounded bg-gray-800 text-gray-400 border border-gray-700 whitespace-nowrap">{badge}</span>}
-                </div>
-                <p className="text-gray-400 leading-relaxed mb-6 flex-grow">{description}</p>
-                <a href="mailto:contacto@tycdigital.cl" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium group-hover:translate-x-2 transition-transform mt-auto">
-                    Conoce más <span className="ml-2"><Icons.ArrowRight /></span>
-                </a>
-            </div>
-        );
+        /* ================================================================
+           SERVICE CARD
+        ================================================================ */
+        const ServiceCard = ({ icon: Icon, title, description, badge, id, delay = 0 }) => {
+            const ref = React.useRef(null);
 
-        const Services = () => {
-            const services = [
-                {
-                    icon: Icons.Server,
-                    title: "IaaS – Infraestructura & Migración",
-                    badge: "Migración",
-                    description: "Migramos y estabilizamos workloads en cloud (Azure/AWS): assessment, estrategia de migración (rehost/replatform), redes, conectividad y operación base para asegurar continuidad y performance."
-                },
-                {
-                    icon: Icons.Code,
-                    title: "PaaS – Modernización de Aplicaciones",
-                    badge: "Modernización",
-                    description: "Modernizamos aplicaciones hacia servicios administrados: APIs e integración, contenedores/arquitecturas cloud-native, automatización y observabilidad para acelerar delivery y reducir carga operativa."
-                },
-                {
-                    icon: Icons.Database,
-                    title: "SaaS – Analítica & Plataforma de Datos",
-                    badge: "Fabric",
-                    description: "Implementamos Microsoft Fabric para unificar datos y analítica: OneLake, shortcuts/mirroring, modelado, reporting y gobierno para escalar BI/AI con menos complejidad."
-                },
-                {
-                    icon: Icons.Brain,
-                    title: "IA – Agentes, RAG y Apps Inteligentes",
-                    badge: "Generative AI",
-                    description: "Creamos soluciones de IA generativa con Azure AI Foundry: agentes y asistentes RAG (PoC→MVP→Enterprise), evaluación, guardrails y despliegue productivo con enfoque en valor de negocio."
-                },
-                {
-                    id: "seguridad",
-                    icon: Icons.Shield,
-                    title: "Seguridad – Protección & Gobierno (Purview)",
-                    badge: "Ciberseguridad",
-                    description: "Aseguramos y gobernamos la información: clasificación/etiquetado, DLP, catálogo y lineage, auditoría y políticas para cumplimiento y reducción de riesgo, incluyendo escenarios habilitados por IA."
-                },
-                {
-                    icon: Icons.FileText,
-                    title: "Gobernabilidad – Gobierno Cloud & Datos",
-                    badge: "Compliance",
-                    description: "Definimos e implementamos gobernanza para escalar sin perder control: estándares de arquitectura, políticas, control de acceso, auditoría y gobierno de datos (catálogo/lineage) para cumplimiento y operación consistente."
-                },
-                {
-                    icon: Icons.Chart,
-                    title: "FinOps – Optimización y Control de Costos",
-                    badge: "FinOps",
-                    description: "Implementamos prácticas FinOps para visibilidad y control: estructura de costos, tagging, presupuestos y alertas, recomendaciones de optimización y reporting para reducir gasto y mejorar la toma de decisiones."
-                }
-            ];
+            const onMove = e => {
+                const el = ref.current;
+                if (!el) return;
+                const r = el.getBoundingClientRect();
+                el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                el.style.setProperty('--my', `${e.clientY - r.top}px`);
+            };
 
-            return (
-                <section id="servicios" className="py-24 relative">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-5xl font-bold mb-4">Soluciones <span className="text-blue-500">End-to-End</span></h2>
-                            <p className="text-gray-400 max-w-2xl mx-auto">
-                                Servicios especializados para acelerar tu transformación digital en Azure y Nube Híbrida.
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {services.map((s, idx) => (
-                                <ServiceCard key={idx} {...s} />
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const MicrosoftPrograms = () => {
-            const programs = [
-                {
-                    icon: Icons.Server,
-                    color: "blue",
-                    title: "Migración e Infraestructura",
-                    badge: "Migrate & Modernize",
-                    description: "Migración de workloads on-premise a Azure con mínimo downtime. Incluye assessment, diseño de arquitectura e implementación. Disponible con y sin Microsoft Defender for Cloud (MDC).",
-                    tags: ["Rehost", "Replatform", "Azure IaaS", "MDC"],
-                },
-                {
-                    icon: Icons.Cpu,
-                    color: "purple",
-                    title: "Virtual Desktop Infrastructure",
-                    badge: "VDI Migration",
-                    description: "Migración de escritorios virtuales a Azure Virtual Desktop (AVD). Ideal para empresas que buscan modernizar su infraestructura de puestos de trabajo con seguridad y escalabilidad cloud.",
-                    tags: ["Azure Virtual Desktop", "AVD", "Remote Work"],
-                },
-                {
-                    icon: Icons.Cloud,
-                    color: "cyan",
-                    title: "Azure VMware Solution",
-                    badge: "AVS Migrate & Modernize",
-                    description: "Migración de entornos VMware on-premise directamente a Azure sin refactorizar. Extiende tu datacenter VMware a la nube con continuidad operacional y costos optimizados.",
-                    tags: ["VMware", "AVS", "Datacenter", "Híbrido"],
-                },
-                {
-                    icon: Icons.Database,
-                    color: "indigo",
-                    title: "Plataforma de Datos",
-                    badge: "Data Platform",
-                    description: "Implementación de plataformas de datos modernas en Azure: lagos de datos, integración, analítica y gobierno. Basado en Microsoft Fabric, Synapse y Azure Data Factory.",
-                    tags: ["Microsoft Fabric", "Synapse", "Data Lake", "BI"],
-                },
-                {
-                    icon: Icons.Brain,
-                    color: "pink",
-                    title: "Inteligencia Artificial & Agentes",
-                    badge: "AI, Agents & Dev",
-                    description: "Proyectos de IA generativa con Azure AI Foundry: asistentes, agentes RAG y copilots empresariales. Desde PoC hasta despliegue productivo con guardrails y evaluación.",
-                    tags: ["Azure OpenAI", "RAG", "Copilot", "AI Foundry"],
-                },
-                {
-                    icon: Icons.Shield,
-                    color: "green",
-                    title: "Seguridad Cloud",
-                    badge: "Secure Azure Cloud",
-                    description: "Implementación de controles de seguridad, Microsoft Defender for Cloud, postura de seguridad (CSPM) y protección de workloads (CWP) para cumplimiento y reducción de riesgo.",
-                    tags: ["Defender for Cloud", "CSPM", "Zero Trust", "Compliance"],
-                },
-            ];
-
-            const colorMap = {
-                blue:   { bg: "bg-blue-900/20",   border: "border-blue-500/20",   text: "text-blue-400",   tag: "bg-blue-900/30 text-blue-300 border-blue-500/20" },
-                purple: { bg: "bg-purple-900/20",  border: "border-purple-500/20", text: "text-purple-400", tag: "bg-purple-900/30 text-purple-300 border-purple-500/20" },
-                cyan:   { bg: "bg-cyan-900/20",    border: "border-cyan-500/20",   text: "text-cyan-400",   tag: "bg-cyan-900/30 text-cyan-300 border-cyan-500/20" },
-                indigo: { bg: "bg-indigo-900/20",  border: "border-indigo-500/20", text: "text-indigo-400", tag: "bg-indigo-900/30 text-indigo-300 border-indigo-500/20" },
-                pink:   { bg: "bg-pink-900/20",    border: "border-pink-500/20",   text: "text-pink-400",   tag: "bg-pink-900/30 text-pink-300 border-pink-500/20" },
-                green:  { bg: "bg-green-900/20",   border: "border-green-500/20",  text: "text-green-400",  tag: "bg-green-900/30 text-green-300 border-green-500/20" },
+            const onLeave = () => {
+                const el = ref.current;
+                if (el) el.style.transform = '';
             };
 
             return (
-                <section id="programas" className="py-24 bg-dark-800/40">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id={id}
+                    ref={ref}
+                    className="spotlight-card glow-border glass-card p-8 rounded-2xl transition-all duration-300 group hover:-translate-y-2 relative overflow-hidden h-full flex flex-col reveal"
+                    data-delay={delay}
+                    onMouseMove={onMove}
+                    onMouseLeave={onLeave}
+                    style={{ borderRadius:'16px' }}
+                >
+                    {/* Faint background icon */}
+                    <div className="absolute top-4 right-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" style={{color:'white'}}>
+                        <Icon />
+                    </div>
 
+                    {/* Icon */}
+                    <div className="w-12 h-12 bg-blue-950/50 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 group-hover:border-blue-500/40 transition-all relative z-10">
+                        <Icon />
+                    </div>
+
+                    {/* Title + badge */}
+                    <div className="flex items-start justify-between gap-3 mb-4 relative z-10">
+                        <h3 className="text-lg font-bold text-white leading-snug">{title}</h3>
+                        {badge && (
+                            <span className="shrink-0 text-xs font-mono py-1 px-2 rounded-lg bg-white/5 text-gray-400 border border-white/8 whitespace-nowrap">{badge}</span>
+                        )}
+                    </div>
+
+                    <p className="text-gray-400 leading-relaxed mb-6 flex-grow text-sm relative z-10">{description}</p>
+
+                    <a href="mailto:contacto@tycdigital.cl"
+                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium group-hover:translate-x-2 transition-transform mt-auto relative z-10">
+                        Conoce más <Icons.ArrowRight />
+                    </a>
+                </div>
+            );
+        };
+
+        /* ================================================================
+           SERVICES
+        ================================================================ */
+        const Services = () => {
+            const services = [
+                { icon: Icons.Server,   title: "IaaS – Infraestructura & Migración",      badge: "Migración",     description: "Migramos y estabilizamos workloads en cloud (Azure/AWS): assessment, estrategia de migración (rehost/replatform), redes, conectividad y operación base para asegurar continuidad y performance." },
+                { icon: Icons.Code,     title: "PaaS – Modernización de Aplicaciones",    badge: "Modernización", description: "Modernizamos aplicaciones hacia servicios administrados: APIs e integración, contenedores/arquitecturas cloud-native, automatización y observabilidad para acelerar delivery y reducir carga operativa." },
+                { icon: Icons.Database, title: "SaaS – Analítica & Plataforma de Datos",  badge: "Fabric",        description: "Implementamos Microsoft Fabric para unificar datos y analítica: OneLake, shortcuts/mirroring, modelado, reporting y gobierno para escalar BI/AI con menos complejidad." },
+                { icon: Icons.Brain,    title: "IA – Agentes, RAG y Apps Inteligentes",   badge: "Generative AI", description: "Creamos soluciones de IA generativa con Azure AI Foundry: agentes y asistentes RAG (PoC→MVP→Enterprise), evaluación, guardrails y despliegue productivo con enfoque en valor de negocio." },
+                { id: "seguridad", icon: Icons.Shield,   title: "Seguridad – Protección & Gobierno (Purview)", badge: "Ciberseguridad", description: "Aseguramos y gobernamos la información: clasificación/etiquetado, DLP, catálogo y lineage, auditoría y políticas para cumplimiento y reducción de riesgo, incluyendo escenarios habilitados por IA." },
+                { icon: Icons.FileText, title: "Gobernabilidad – Gobierno Cloud & Datos",  badge: "Compliance",    description: "Definimos e implementamos gobernanza para escalar sin perder control: estándares de arquitectura, políticas, control de acceso, auditoría y gobierno de datos para cumplimiento y operación consistente." },
+                { icon: Icons.Chart,    title: "FinOps – Optimización y Control de Costos", badge: "FinOps",       description: "Implementamos prácticas FinOps para visibilidad y control: estructura de costos, tagging, presupuestos y alertas, recomendaciones de optimización y reporting para reducir gasto y mejorar decisiones." },
+            ];
+
+            return (
+                <section id="servicios" className="py-28 relative">
+                    {/* Background glow */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                        background: 'radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.05) 0%, transparent 60%)'
+                    }} />
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="text-center mb-16">
+                            <div className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-950/50 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-5 tracking-wide uppercase">
+                                Nuestros Servicios
+                            </div>
+                            <h2 className="reveal text-4xl md:text-5xl font-bold mb-5" data-delay="80">
+                                Soluciones <span className="text-gradient">End-to-End</span>
+                            </h2>
+                            <p className="reveal text-gray-400 max-w-2xl mx-auto text-lg" data-delay="160">
+                                Servicios especializados para acelerar tu transformación digital en Azure y Nube Híbrida.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {services.map((s, i) => (
+                                <ServiceCard key={i} {...s} delay={i * 80} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        /* ================================================================
+           MICROSOFT PROGRAMS
+        ================================================================ */
+        const MicrosoftPrograms = () => {
+            const programs = [
+                { icon: Icons.Server,   color: { bg:'rgba(29,78,216,0.15)',  border:'rgba(59,130,246,0.25)',  text:'#60a5fa',  tag:'rgba(29,78,216,0.2)' },   title: "Migración e Infraestructura",      badge: "Migrate & Modernize",      description: "Migración de workloads on-premise a Azure con mínimo downtime. Incluye assessment, diseño de arquitectura e implementación. Disponible con y sin Microsoft Defender for Cloud (MDC).",   tags: ["Rehost","Replatform","Azure IaaS","MDC"] },
+                { icon: Icons.Cpu,      color: { bg:'rgba(109,40,217,0.15)', border:'rgba(139,92,246,0.25)',  text:'#c084fc',  tag:'rgba(109,40,217,0.2)' },   title: "Virtual Desktop Infrastructure",   badge: "VDI Migration",            description: "Migración de escritorios virtuales a Azure Virtual Desktop (AVD). Ideal para empresas que buscan modernizar su infraestructura de puestos de trabajo con seguridad y escalabilidad cloud.", tags: ["Azure Virtual Desktop","AVD","Remote Work"] },
+                { icon: Icons.Cloud,    color: { bg:'rgba(8,145,178,0.15)',  border:'rgba(6,182,212,0.25)',   text:'#22d3ee',  tag:'rgba(8,145,178,0.2)' },    title: "Azure VMware Solution",            badge: "AVS Migrate & Modernize",  description: "Migración de entornos VMware on-premise directamente a Azure sin refactorizar. Extiende tu datacenter VMware a la nube con continuidad operacional y costos optimizados.",              tags: ["VMware","AVS","Datacenter","Híbrido"] },
+                { icon: Icons.Database, color: { bg:'rgba(67,56,202,0.15)',  border:'rgba(99,102,241,0.25)',  text:'#818cf8',  tag:'rgba(67,56,202,0.2)' },    title: "Plataforma de Datos",              badge: "Data Platform",            description: "Implementación de plataformas de datos modernas en Azure: lagos de datos, integración, analítica y gobierno. Basado en Microsoft Fabric, Synapse y Azure Data Factory.",               tags: ["Microsoft Fabric","Synapse","Data Lake","BI"] },
+                { icon: Icons.Brain,    color: { bg:'rgba(157,23,77,0.15)',  border:'rgba(244,114,182,0.25)', text:'#f472b6',  tag:'rgba(157,23,77,0.2)' },    title: "Inteligencia Artificial & Agentes", badge: "AI, Agents & Dev",        description: "Proyectos de IA generativa con Azure AI Foundry: asistentes, agentes RAG y copilots empresariales. Desde PoC hasta despliegue productivo con guardrails y evaluación.",              tags: ["Azure OpenAI","RAG","Copilot","AI Foundry"] },
+                { icon: Icons.Shield,   color: { bg:'rgba(5,150,105,0.15)',  border:'rgba(16,185,129,0.25)',  text:'#34d399',  tag:'rgba(5,150,105,0.2)' },    title: "Seguridad Cloud",                  badge: "Secure Azure Cloud",       description: "Implementación de controles de seguridad, Microsoft Defender for Cloud, postura de seguridad (CSPM) y protección de workloads (CWP) para cumplimiento y reducción de riesgo.",         tags: ["Defender for Cloud","CSPM","Zero Trust","Compliance"] },
+            ];
+
+            return (
+                <section id="programas" className="py-28 relative overflow-hidden">
+                    {/* Background image: earth from space — muy sutil */}
+                    <div className="absolute inset-0 overflow-hidden z-0">
+                        <div className="parallax-bg absolute inset-[-80px]" data-speed="0.18" style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center 30%',
+                            willChange: 'transform',
+                        }} />
+                        <div className="absolute inset-0" style={{
+                            background: 'linear-gradient(to bottom, rgba(5,8,16,0.93) 0%, rgba(5,8,16,0.82) 50%, rgba(5,8,16,0.93) 100%)',
+                        }} />
+                        <div className="absolute inset-0" style={{
+                            background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(29,78,216,0.1) 0%, transparent 70%)',
+                        }} />
+                    </div>
+                    <div className="divider absolute top-0 left-0 right-0 z-10" />
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                         {/* Header */}
-                        <div className="text-center mb-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-sm font-semibold mb-6 backdrop-blur-sm">
-                                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                        <div className="text-center mb-8">
+                            <div className="reveal inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-sm font-semibold mb-6 badge-pulse">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inset-0 rounded-full bg-blue-400 opacity-70" />
+                                    <span className="relative rounded-full h-2.5 w-2.5 bg-blue-400" />
+                                </span>
                                 Microsoft Partner — Programas Financiados
                             </div>
-                            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                                Accede a proyectos Azure <span className="text-blue-500">sin costo</span>
+                            <h2 className="reveal text-4xl md:text-5xl font-bold mb-5" data-delay="80">
+                                Accede a proyectos Azure <span className="text-gradient">sin costo</span>
                             </h2>
-                            <p className="text-gray-400 max-w-3xl mx-auto text-lg leading-relaxed">
-                                Como partner certificado de Microsoft, TyC Digital puede entregar programas Azure Accelerate <strong className="text-white">financiados por Microsoft</strong>. Estos programas cubren el costo de consultoría para proyectos de migración, datos, IA y seguridad, sin costo para tu empresa — previa evaluación de elegibilidad.
+                            <p className="reveal text-gray-400 max-w-3xl mx-auto text-lg leading-relaxed" data-delay="160">
+                                Como partner certificado de Microsoft, TyC Digital puede entregar programas Azure Accelerate{' '}
+                                <strong className="text-white">financiados por Microsoft</strong>. Estos programas cubren el costo de
+                                consultoría para proyectos de migración, datos, IA y seguridad, sin costo para tu empresa — previa evaluación de elegibilidad.
                             </p>
                         </div>
 
                         {/* How it works */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16 max-w-4xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-4xl mx-auto">
                             {[
-                                { step: "1", title: "Evaluación", desc: "Revisamos si tu empresa cumple los requisitos de Microsoft para el programa." },
-                                { step: "2", title: "Aprobación", desc: "Microsoft valida la elegibilidad y aprueba el financiamiento del proyecto." },
-                                { step: "3", title: "Ejecución", desc: "TyC Digital entrega el proyecto a costo cero en consultoría para tu empresa." },
-                            ].map((s) => (
-                                <div key={s.step} className="glass-card rounded-xl p-6 text-center border border-gray-800">
-                                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">{s.step}</div>
-                                    <h4 className="text-white font-bold mb-1">{s.title}</h4>
-                                    <p className="text-gray-500 text-sm">{s.desc}</p>
+                                { step:'1', title:'Evaluación', desc:'Revisamos si tu empresa cumple los requisitos de Microsoft para el programa.' },
+                                { step:'2', title:'Aprobación',  desc:'Microsoft valida la elegibilidad y aprueba el financiamiento del proyecto.' },
+                                { step:'3', title:'Ejecución',   desc:'TyC Digital entrega el proyecto a costo cero en consultoría para tu empresa.' },
+                            ].map((s, i) => (
+                                <div key={s.step} className="reveal step-card glass-card rounded-2xl p-7 text-center border border-white/5 hover:border-blue-500/25 transition-all" data-delay={i * 100}>
+                                    <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4 shadow-lg shadow-blue-500/30">{s.step}</div>
+                                    <h4 className="text-white font-bold mb-2">{s.title}</h4>
+                                    <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
                                 </div>
                             ))}
                         </div>
 
                         {/* Program cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {programs.map((p, i) => {
-                                const c = colorMap[p.color];
-                                const Icon = p.icon;
-                                return (
-                                    <div key={i} className="glass-card rounded-2xl p-6 border border-gray-800 hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-1 flex flex-col">
-                                        <div className="flex items-start gap-4 mb-4">
-                                            <div className={`w-10 h-10 ${c.bg} rounded-lg flex items-center justify-center ${c.text} border ${c.border} shrink-0`}>
-                                                <Icon />
-                                            </div>
-                                            <div>
-                                                <span className="text-xs font-mono text-gray-500 uppercase tracking-wide">{p.badge}</span>
-                                                <h3 className="text-white font-bold text-base leading-tight">{p.title}</h3>
-                                            </div>
+                            {programs.map((p, i) => (
+                                <div key={i}
+                                    className="reveal glass-card rounded-2xl p-6 border border-white/5 hover:border-blue-500/25 transition-all duration-300 hover:-translate-y-1 flex flex-col glow-border"
+                                    data-delay={i * 80}
+                                    style={{ borderRadius:'16px' }}
+                                >
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div style={{
+                                            width:'42px', height:'42px', flexShrink:0,
+                                            background: p.color.bg,
+                                            border: `1px solid ${p.color.border}`,
+                                            color: p.color.text,
+                                            borderRadius:'10px',
+                                            display:'flex', alignItems:'center', justifyContent:'center',
+                                        }}>
+                                            <p.icon />
                                         </div>
-                                        <p className="text-gray-400 text-sm leading-relaxed mb-4 flex-grow">{p.description}</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {p.tags.map((t, j) => (
-                                                <span key={j} className={`text-xs px-2 py-1 rounded border ${c.tag}`}>{t}</span>
-                                            ))}
+                                        <div>
+                                            <span className="text-xs font-mono text-gray-500 uppercase tracking-widest">{p.badge}</span>
+                                            <h3 className="text-white font-bold text-base leading-snug mt-0.5">{p.title}</h3>
                                         </div>
                                     </div>
-                                );
-                            })}
+                                    <p className="text-gray-400 text-sm leading-relaxed mb-4 flex-grow">{p.description}</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {p.tags.map((t, j) => (
+                                            <span key={j} className="text-xs px-2.5 py-1 rounded-lg border"
+                                                style={{ background: p.color.tag, borderColor: p.color.border, color: p.color.text }}>
+                                                {t}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* CTA disclaimer */}
-                        <div className="max-w-3xl mx-auto glass-card rounded-2xl p-8 border border-blue-500/30 text-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-blue-600/5 pointer-events-none"></div>
-                            <p className="text-gray-400 text-sm mb-4 relative z-10">
+                        <div className="reveal max-w-3xl mx-auto glass-card rounded-2xl p-8 border border-blue-500/25 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 pointer-events-none" style={{
+                                background:'radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 70%)'
+                            }} />
+                            <p className="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">
                                 Los programas Azure Accelerate están disponibles para empresas SMB que cumplan requisitos de Microsoft (consumo Azure, tamaño de empresa y tipo de proyecto). TyC Digital realiza la evaluación de elegibilidad sin costo y sin compromiso.
                             </p>
-                            <a href="#contacto" className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:scale-105 relative z-10">
+                            <a href="#contacto"
+                                className="btn-shine inline-flex items-center gap-3 px-9 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-cyan-500 rounded-xl font-bold text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all hover:scale-105 relative z-10">
                                 Evalúa tu elegibilidad gratis <Icons.ArrowRight />
                             </a>
                         </div>
                     </div>
+                    <div className="divider absolute bottom-0 left-0 right-0" />
                 </section>
             );
         };
 
+        /* ================================================================
+           ABOUT US
+        ================================================================ */
         const AboutUs = () => {
             const values = [
-                { icon: Icons.Target, title: "Especialización total", desc: "100% enfocados en tecnologías Microsoft Cloud. No somos generalistas: somos el mejor equipo Azure que puedes contratar." },
-                { icon: Icons.Zap, title: "Velocidad y agilidad", desc: "Ciclos cortos, entregas rápidas. Nuestros proyectos arrancan en días, no en meses." },
-                { icon: Icons.Award, title: "Certificaciones Expert", desc: "Ingenieros con certificaciones Azure nivel Expert y especializaciones en seguridad, datos e IA." },
-                { icon: Icons.Users, title: "Equipo comprometido", desc: "Somos socios de tu negocio, no solo proveedores. Tu éxito en la nube es nuestra misión." },
+                { icon: Icons.Target, title: "Especialización total",    desc: "100% enfocados en tecnologías Microsoft Cloud. No somos generalistas: somos el mejor equipo Azure que puedes contratar." },
+                { icon: Icons.Zap,    title: "Velocidad y agilidad",     desc: "Ciclos cortos, entregas rápidas. Nuestros proyectos arrancan en días, no en meses." },
+                { icon: Icons.Award,  title: "Certificaciones Expert",   desc: "Ingenieros con certificaciones Azure nivel Expert y especializaciones en seguridad, datos e IA." },
+                { icon: Icons.Users,  title: "Equipo comprometido",      desc: "Somos socios de tu negocio, no solo proveedores. Tu éxito en la nube es nuestra misión." },
             ];
+
             return (
-                <section id="nosotros" className="py-24 bg-dark-800/40">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <section id="nosotros" className="py-28 relative overflow-hidden">
+                    {/* Background image: dark abstract tech — muy sutil */}
+                    <div className="absolute inset-0 overflow-hidden z-0">
+                        <div className="parallax-bg absolute inset-[-80px]" data-speed="0.20" style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            willChange: 'transform',
+                        }} />
+                        <div className="absolute inset-0" style={{
+                            background: 'linear-gradient(to bottom, rgba(5,8,16,0.95) 0%, rgba(5,8,16,0.88) 50%, rgba(5,8,16,0.95) 100%)',
+                        }} />
+                    </div>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-5xl font-bold mb-4">Sobre <span className="text-blue-500">Nosotros</span></h2>
-                            <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                            <div className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-950/50 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-5 tracking-wide uppercase">
+                                Quiénes Somos
+                            </div>
+                            <h2 className="reveal text-4xl md:text-5xl font-bold mb-5" data-delay="80">
+                                Sobre <span className="text-gradient">Nosotros</span>
+                            </h2>
+                            <p className="reveal text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed" data-delay="160">
                                 Somos una consultora chilena especializada exclusivamente en Microsoft Azure y la nube híbrida. Nacimos para ayudar a las empresas a sacar el máximo provecho del cloud de manera rápida, segura y efectiva.
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {values.map((v, i) => (
-                                <div key={i} className="glass-card p-8 rounded-2xl flex gap-6 items-start hover:border-blue-500/40 transition-all">
-                                    <div className="w-12 h-12 bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-400 shrink-0">
+                                <div key={i}
+                                    className="reveal glow-border glass-card p-8 rounded-2xl flex gap-5 items-start transition-all duration-300 hover:-translate-y-1"
+                                    data-delay={i * 100}
+                                    style={{ borderRadius:'16px' }}
+                                >
+                                    <div className="w-12 h-12 bg-blue-950/50 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 shrink-0">
                                         <v.icon />
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-white mb-2">{v.title}</h3>
-                                        <p className="text-gray-400 leading-relaxed">{v.desc}</p>
+                                        <p className="text-gray-400 leading-relaxed text-sm">{v.desc}</p>
                                     </div>
                                 </div>
                             ))}
@@ -510,250 +1221,238 @@
             );
         };
 
-        const Comparison = () => {
-            return (
-                <section className="py-24">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                            <div>
-                                <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                                    ¿Por qué elegir <br/> <span className="text-blue-500">TyC Digital</span>?
-                                </h2>
-                                <p className="text-gray-400 text-lg mb-8">
-                                    A diferencia de las grandes consultoras generalistas, nos enfocamos 100% en tecnologías Microsoft Cloud. Esto nos permite ser más rápidos, precisos y efectivos.
-                                </p>
-                                <div className="space-y-4">
-                                    {[
-                                        "Ingenieros Certificados en Azure (Expert Level)",
-                                        "Respuesta a incidentes en menos de 1 hora",
-                                        "Metodología propia de migración sin downtime",
-                                        "Dashboards de costos personalizados"
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 shrink-0">
-                                                <Icons.Check />
-                                            </div>
-                                            <span className="text-gray-300 font-medium">{item}</span>
-                                        </div>
-                                    ))}
-                                </div>
+        /* ================================================================
+           COMPARISON
+        ================================================================ */
+        const Comparison = () => (
+            <section className="py-28 relative">
+                <div className="divider absolute top-0 left-0 right-0" />
+                <div className="absolute inset-0 pointer-events-none" style={{
+                    background:'radial-gradient(ellipse at 20% 60%, rgba(59,130,246,0.06) 0%, transparent 55%)'
+                }} />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                        {/* Left */}
+                        <div className="reveal-left">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-950/50 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-6 tracking-wide uppercase">
+                                Por Qué Elegirnos
                             </div>
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-blue-600/20 blur-3xl rounded-full"></div>
-                                <div className="glass-card p-8 rounded-2xl relative border border-gray-700">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between p-4 bg-dark-900 rounded-lg border border-gray-800">
-                                            <div>
-                                                <p className="text-xs text-gray-500 uppercase">Consultora Tradicional</p>
-                                                <p className="text-white font-bold">Lento y Burocrático</p>
-                                            </div>
-                                            <span className="text-red-500 text-sm">-30% Eficiencia</span>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                                ¿Por qué elegir <br/>
+                                <span className="text-gradient">TyC Digital</span>?
+                            </h2>
+                            <p className="text-gray-400 text-lg mb-10 leading-relaxed">
+                                A diferencia de las grandes consultoras generalistas, nos enfocamos 100% en tecnologías Microsoft Cloud. Esto nos permite ser más rápidos, precisos y efectivos.
+                            </p>
+                            <div className="space-y-4">
+                                {[
+                                    "Ingenieros Certificados en Azure (Expert Level)",
+                                    "Respuesta a incidentes en menos de 1 hora",
+                                    "Metodología propia de migración sin downtime",
+                                    "Dashboards de costos personalizados",
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-4 group">
+                                        <div className="w-6 h-6 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center text-green-400 shrink-0 group-hover:scale-110 transition-transform">
+                                            <Icons.Check />
                                         </div>
-                                        <div className="flex items-center justify-between p-4 bg-blue-900/20 rounded-lg border border-blue-500/50 relative overflow-hidden">
-                                            <div className="absolute left-0 top-0 h-full w-1 bg-blue-500"></div>
-                                            <div>
-                                                <p className="text-xs text-blue-300 uppercase">TyC Digital</p>
-                                                <p className="text-white font-bold">Ágil y Especializado</p>
-                                            </div>
-                                            <span className="text-green-400 text-sm">+150% ROI</span>
+                                        <span className="text-gray-300 font-medium group-hover:text-white transition-colors">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right */}
+                        <div className="reveal-right relative">
+                            <div className="absolute inset-0 bg-blue-600/10 blur-3xl rounded-full pointer-events-none" />
+                            <div className="glass-card p-8 rounded-2xl border border-white/8 relative" style={{ borderRadius:'20px' }}>
+                                <div className="space-y-5">
+                                    {/* Traditional */}
+                                    <div className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/3">
+                                        <div>
+                                            <p className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Consultora Tradicional</p>
+                                            <p className="text-white font-bold">Lento y Burocrático</p>
                                         </div>
-                                        <div className="p-4 bg-dark-900 rounded-lg border border-gray-800">
-                                            <div className="flex justify-between text-sm mb-2">
-                                                <span className="text-gray-400">Implementación de Seguridad</span>
-                                                <span className="text-blue-400">2 semanas</span>
-                                            </div>
-                                            <div className="w-full bg-gray-800 rounded-full h-2">
-                                                <div className="bg-blue-600 h-2 rounded-full" style={{width: '85%'}}></div>
+                                        <span className="text-red-400 text-sm font-semibold">-30% Eficiencia</span>
+                                    </div>
+
+                                    {/* TyC Digital */}
+                                    <div className="flex items-center justify-between p-4 rounded-xl relative overflow-hidden"
+                                        style={{ background:'linear-gradient(135deg, rgba(29,78,216,0.15), rgba(8,145,178,0.08))', border:'1px solid rgba(59,130,246,0.35)' }}>
+                                        <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-l-xl" />
+                                        <div className="pl-3">
+                                            <p className="text-xs text-blue-300 uppercase tracking-wide mb-0.5">TyC Digital</p>
+                                            <p className="text-white font-bold">Ágil y Especializado</p>
+                                        </div>
+                                        <span className="text-green-400 text-sm font-semibold">+150% ROI</span>
+                                    </div>
+
+                                    {/* Progress */}
+                                    <div className="p-4 rounded-xl border border-white/5 bg-white/3">
+                                        <div className="flex justify-between text-sm mb-3">
+                                            <span className="text-gray-400">Implementación de Seguridad</span>
+                                            <span className="text-blue-400 font-semibold">2 semanas</span>
+                                        </div>
+                                        <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                                            <div className="h-2 rounded-full relative overflow-hidden"
+                                                style={{ width:'85%', background:'linear-gradient(90deg, #2563eb, #06b6d4)' }}>
+                                                <div className="absolute inset-0 opacity-40"
+                                                    style={{ background:'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)', animation:'shimmer-bar 2s linear infinite', backgroundSize:'200% 100%' }} />
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[
+                                            { n: <><CountUp to={98} suffix="%" /></>, l: 'Satisfacción' },
+                                            { n: <><CountUp to={40} suffix="+" /></>, l: 'Proyectos' },
+                                            { n: '<1h', l: 'Soporte' },
+                                        ].map((s, i) => (
+                                            <div key={i} className="text-center p-3 rounded-xl border border-white/5 bg-white/2">
+                                                <p className="text-xl font-extrabold text-gradient mb-0.5">{s.n}</p>
+                                                <p className="text-xs text-gray-500">{s.l}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </section>
-            );
-        };
+                </div>
+                <div className="divider absolute bottom-0 left-0 right-0" />
+            </section>
+        );
 
-        const CTA = () => {
-            return (
-                <section className="py-24 bg-dark-800/30">
-                    <div className="max-w-5xl mx-auto px-4">
-                        <div className="bg-gradient-to-r from-blue-900 to-slate-900 rounded-3xl p-12 md:p-20 text-center border border-blue-500/30 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
-                            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 relative z-10">
+        /* ================================================================
+           CTA BANNER
+        ================================================================ */
+        const CTA = () => (
+            <section className="py-28">
+                <div className="max-w-5xl mx-auto px-4">
+                    <div className="reveal cta-bg rounded-3xl p-12 md:p-20 text-center border border-blue-500/20 relative overflow-hidden" style={{ borderRadius:'28px' }}>
+                        {/* Background image: dark aerial city */}
+                        <div className="absolute inset-0 overflow-hidden rounded-3xl z-0">
+                            <div className="parallax-bg absolute inset-[-60px]" data-speed="0.15" style={{
+                                backgroundImage: 'url(https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1920&q=80)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                willChange: 'transform',
+                            }} />
+                            <div className="absolute inset-0" style={{
+                                background: 'linear-gradient(135deg, rgba(10,22,60,0.90) 0%, rgba(5,8,16,0.80) 50%, rgba(10,22,50,0.90) 100%)',
+                            }} />
+                        </div>
+                        {/* Decorative elements */}
+                        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-72 h-72 bg-blue-600/12 rounded-full blur-3xl pointer-events-none z-0" />
+                        <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-56 h-56 bg-cyan-600/10 rounded-full blur-2xl pointer-events-none z-0" />
+
+                        {/* Animated ring */}
+                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-blue-500/8 pointer-events-none animate-spin-slow" />
+
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-sm font-semibold mb-8">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inset-0 rounded-full bg-blue-400 opacity-70" />
+                                    <span className="relative rounded-full h-2.5 w-2.5 bg-blue-400" />
+                                </span>
+                                Empieza Hoy
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
                                 ¿Listo para escalar en Azure?
                             </h2>
-                            <p className="text-blue-100 text-lg mb-10 max-w-2xl mx-auto relative z-10">
+                            <p className="text-blue-100/70 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
                                 Agenda una llamada de 15 minutos con nuestros arquitectos cloud. Sin compromisos de venta, solo estrategia técnica.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-                                <a href="mailto:contacto@tycdigital.cl" className="px-8 py-4 bg-white text-blue-900 hover:bg-gray-100 rounded-lg font-bold transition-colors">
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <a href="mailto:contacto@tycdigital.cl"
+                                    className="btn-shine px-10 py-4 bg-white text-blue-900 hover:bg-blue-50 rounded-xl font-bold transition-all hover:scale-105 shadow-xl shadow-black/20 text-lg">
                                     Agendar Reunión
                                 </a>
-                                <a href="mailto:contacto@tycdigital.cl" className="px-8 py-4 bg-transparent border border-blue-400 text-white hover:bg-blue-900/50 rounded-lg font-bold transition-colors">
+                                <a href="mailto:contacto@tycdigital.cl"
+                                    className="px-10 py-4 bg-transparent border border-blue-400/50 text-white hover:bg-blue-900/30 hover:border-blue-400 rounded-xl font-bold transition-all text-lg">
                                     Contactar por Email
                                 </a>
                             </div>
                         </div>
                     </div>
-                </section>
-            );
-        };
+                </div>
+            </section>
+        );
 
-        const Footer = () => {
-            const year = new Date().getFullYear();
-            return (
-                <footer className="border-t border-gray-800 bg-dark-900 pt-16 pb-8">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                            <div className="col-span-2 md:col-span-1">
-                                <a href="#" className="flex items-center space-x-2 mb-4">
-                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                                        <span className="font-bold text-lg">T</span>
-                                    </div>
-                                    <span className="text-xl font-bold text-white">TyC <span className="text-blue-500">Digital</span></span>
-                                </a>
-                                <p className="text-gray-500 text-sm mb-4">
-                                    Expertos en consultoría Azure, seguridad cloud y transformación digital para empresas modernas en Chile.
-                                </p>
-                                <a href="mailto:contacto@tycdigital.cl" className="text-blue-400 text-sm hover:text-blue-300 transition-colors">
-                                    contacto@tycdigital.cl
-                                </a>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Servicios</h4>
-                                <ul className="space-y-2 text-sm text-gray-500">
-                                    <li><a href="#servicios" className="hover:text-blue-400 transition-colors">Cloud Migration</a></li>
-                                    <li><a href="#seguridad" className="hover:text-blue-400 transition-colors">Azure Security</a></li>
-                                    <li><a href="#servicios" className="hover:text-blue-400 transition-colors">Data & AI</a></li>
-                                    <li><a href="#servicios" className="hover:text-blue-400 transition-colors">FinOps</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Compañía</h4>
-                                <ul className="space-y-2 text-sm text-gray-500">
-                                    <li><a href="#nosotros" className="hover:text-blue-400 transition-colors">Sobre Nosotros</a></li>
-                                    <li><a href="mailto:contacto@tycdigital.cl" className="hover:text-blue-400 transition-colors">Contacto</a></li>
-                                    <li><a href="mailto:contacto@tycdigital.cl" className="hover:text-blue-400 transition-colors">Asesoría Gratuita</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Legal</h4>
-                                <ul className="space-y-2 text-sm text-gray-500">
-                                    <li><a href="#" className="hover:text-blue-400 transition-colors">Privacidad</a></li>
-                                    <li><a href="#" className="hover:text-blue-400 transition-colors">Términos</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <p className="text-gray-600 text-sm">© {year} TyC Digital. Todos los derechos reservados.</p>
-                            <div className="flex gap-4 text-gray-500">
-                                <a href="https://www.linkedin.com/company/tycdigital" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors" aria-label="LinkedIn">
-                                    <Icons.LinkedIn />
-                                </a>
-                                <a href="https://twitter.com/tycdigital" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors" aria-label="Twitter / X">
-                                    <Icons.Twitter />
-                                </a>
-                                <a href="https://www.instagram.com/tycdigital" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors" aria-label="Instagram">
-                                    <Icons.Instagram />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            );
-        };
-
+        /* ================================================================
+           CONTACT FORM
+        ================================================================ */
         const ContactForm = () => {
-            const [form, setForm] = React.useState({ nombre: '', empresa: '', correo: '', numero: '' });
+            const [form, setForm] = React.useState({ nombre:'', empresa:'', correo:'', numero:'' });
             const [sent, setSent] = React.useState(false);
 
-            const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+            const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-            const handleSubmit = (e) => {
+            const handleSubmit = e => {
                 e.preventDefault();
-                const subject = encodeURIComponent(`Contacto desde tycdigital.cl – ${form.nombre} (${form.empresa})`);
-                const body = encodeURIComponent(
-                    `Nombre: ${form.nombre}\nEmpresa: ${form.empresa}\nCorreo: ${form.correo}\nTeléfono: ${form.numero}\n\n---\nMensaje enviado desde el formulario de contacto en www.tycdigital.cl`
-                );
-                window.location.href = `mailto:contacto@tycdigital.cl?subject=${subject}&body=${body}`;
+                const s = encodeURIComponent(`Contacto desde tycdigital.cl – ${form.nombre} (${form.empresa})`);
+                const b = encodeURIComponent(`Nombre: ${form.nombre}\nEmpresa: ${form.empresa}\nCorreo: ${form.correo}\nTeléfono: ${form.numero}\n\n---\nMensaje enviado desde el formulario de contacto en www.tycdigital.cl`);
+                window.location.href = `mailto:contacto@tycdigital.cl?subject=${s}&body=${b}`;
                 setSent(true);
                 setTimeout(() => setSent(false), 5000);
             };
 
-            const inputClass = "w-full bg-dark-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm";
-
             return (
-                <section id="contacto" className="py-24">
-                    <div className="max-w-2xl mx-auto px-4 sm:px-6">
+                <section id="contacto" className="py-28 relative">
+                    <div className="divider absolute top-0 left-0 right-0" />
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                        background:'radial-gradient(ellipse at 50% 100%, rgba(59,130,246,0.07) 0%, transparent 60%)'
+                    }} />
+                    <div className="max-w-2xl mx-auto px-4 sm:px-6 relative z-10">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold mb-4">¿Hablamos?</h2>
-                            <p className="text-gray-400">Completa el formulario y te contactamos a la brevedad.</p>
+                            <div className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-950/50 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-5 tracking-wide uppercase">
+                                Contacto
+                            </div>
+                            <h2 className="reveal text-4xl md:text-5xl font-bold mb-4" data-delay="80">
+                                ¿<span className="text-gradient">Hablamos</span>?
+                            </h2>
+                            <p className="reveal text-gray-400 text-lg" data-delay="160">
+                                Completa el formulario y te contactamos a la brevedad.
+                            </p>
                         </div>
-                        <div className="glass-card rounded-2xl p-8 border border-gray-800">
+
+                        <div className="reveal glass-card rounded-2xl p-8 border border-white/6 relative overflow-hidden" data-delay="240" style={{ borderRadius:'20px' }}>
+                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+
                             {sent && (
-                                <div className="mb-6 flex items-center gap-3 bg-green-900/30 border border-green-500/40 text-green-400 rounded-lg px-4 py-3 text-sm">
+                                <div className="mb-6 flex items-center gap-3 bg-green-950/50 border border-green-500/30 text-green-400 rounded-xl px-4 py-3 text-sm">
                                     <Icons.Check />
                                     <span>¡Tu cliente de correo se abrió con los datos listos! Revisa el borrador y envíalo.</span>
                                 </div>
                             )}
+
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
-                                        <input
-                                            type="text"
-                                            name="nombre"
-                                            required
-                                            placeholder="Tu nombre"
-                                            value={form.nombre}
-                                            onChange={handleChange}
-                                            className={inputClass}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-300 mb-1.5">Nombre *</label>
+                                        <input type="text" name="nombre" required placeholder="Tu nombre"
+                                            value={form.nombre} onChange={handleChange} className="input-field" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Empresa *</label>
-                                        <input
-                                            type="text"
-                                            name="empresa"
-                                            required
-                                            placeholder="Nombre de tu empresa"
-                                            value={form.empresa}
-                                            onChange={handleChange}
-                                            className={inputClass}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-300 mb-1.5">Empresa *</label>
+                                        <input type="text" name="empresa" required placeholder="Nombre de tu empresa"
+                                            value={form.empresa} onChange={handleChange} className="input-field" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Correo *</label>
-                                        <input
-                                            type="email"
-                                            name="correo"
-                                            required
-                                            placeholder="tu@empresa.cl"
-                                            value={form.correo}
-                                            onChange={handleChange}
-                                            className={inputClass}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-300 mb-1.5">Correo *</label>
+                                        <input type="email" name="correo" required placeholder="tu@empresa.cl"
+                                            value={form.correo} onChange={handleChange} className="input-field" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Teléfono</label>
-                                        <input
-                                            type="tel"
-                                            name="numero"
-                                            placeholder="+56 9 XXXX XXXX"
-                                            value={form.numero}
-                                            onChange={handleChange}
-                                            className={inputClass}
-                                        />
+                                        <label className="block text-sm font-medium text-gray-300 mb-1.5">Teléfono</label>
+                                        <input type="tel" name="numero" placeholder="+56 9 XXXX XXXX"
+                                            value={form.numero} onChange={handleChange} className="input-field" />
                                     </div>
                                 </div>
-                                <button
-                                    type="submit"
-                                    className="w-full px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
-                                >
+                                <button type="submit"
+                                    className="btn-shine w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-cyan-500 rounded-xl font-bold text-white text-lg shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all hover:scale-[1.02] flex items-center justify-center gap-3">
                                     Enviar mensaje <Icons.ArrowRight />
                                 </button>
                             </form>
@@ -763,22 +1462,95 @@
             );
         };
 
-        const WhatsAppButton = () => (
-            <a
-                href="https://wa.me/56972584002?text=Hola%2C%20estoy%20interesado%20en%20los%20servicios%20de%20Azure"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="whatsapp-btn"
-                aria-label="Habla con un ingeniero certificado"
-                title="Habla con un ingeniero certificado"
-            >
+        /* ================================================================
+           FOOTER
+        ================================================================ */
+        const Footer = () => {
+            const yr = new Date().getFullYear();
+            return (
+                <footer className="border-t border-white/5 pt-16 pb-8 relative" style={{ background:'#03060f' }}>
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                            {/* Brand */}
+                            <div className="col-span-2 md:col-span-1">
+                                <a href="#" className="flex items-center gap-3 mb-5">
+                                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                                        <span className="font-bold text-white text-lg">T</span>
+                                    </div>
+                                    <span className="text-xl font-bold text-white">TyC <span className="text-gradient">Digital</span></span>
+                                </a>
+                                <p className="text-gray-500 text-sm mb-4 leading-relaxed">
+                                    Expertos en consultoría Azure, seguridad cloud y transformación digital para empresas modernas en Chile.
+                                </p>
+                                <a href="mailto:contacto@tycdigital.cl" className="text-blue-400 text-sm hover:text-blue-300 transition-colors">
+                                    contacto@tycdigital.cl
+                                </a>
+                            </div>
+
+                            {/* Servicios */}
+                            <div>
+                                <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Servicios</h4>
+                                <ul className="space-y-2.5 text-sm text-gray-500">
+                                    {[['#servicios','Cloud Migration'],['#seguridad','Azure Security'],['#servicios','Data & AI'],['#servicios','FinOps']].map(([h, l]) => (
+                                        <li key={l}><a href={h} className="hover:text-blue-400 transition-colors">{l}</a></li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Compañía */}
+                            <div>
+                                <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Compañía</h4>
+                                <ul className="space-y-2.5 text-sm text-gray-500">
+                                    {[['#nosotros','Sobre Nosotros'],['mailto:contacto@tycdigital.cl','Contacto'],['mailto:contacto@tycdigital.cl','Asesoría Gratuita']].map(([h, l]) => (
+                                        <li key={l}><a href={h} className="hover:text-blue-400 transition-colors">{l}</a></li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Legal */}
+                            <div>
+                                <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Legal</h4>
+                                <ul className="space-y-2.5 text-sm text-gray-500">
+                                    {[['#','Privacidad'],['#','Términos']].map(([h, l]) => (
+                                        <li key={l}><a href={h} className="hover:text-blue-400 transition-colors">{l}</a></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <p className="text-gray-600 text-sm">© {yr} TyC Digital. Todos los derechos reservados.</p>
+                            <div className="flex gap-4 text-gray-500">
+                                <a href="https://www.linkedin.com/company/tycdigital" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors p-2 hover:bg-white/5 rounded-lg" aria-label="LinkedIn"><Icons.LinkedIn /></a>
+                                <a href="https://twitter.com/tycdigital"              target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors p-2 hover:bg-white/5 rounded-lg" aria-label="Twitter / X"><Icons.Twitter /></a>
+                                <a href="https://www.instagram.com/tycdigital"       target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors p-2 hover:bg-white/5 rounded-lg" aria-label="Instagram"><Icons.Instagram /></a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        /* ================================================================
+           WHATSAPP
+        ================================================================ */
+        const WhatsApp = () => (
+            <a href="https://wa.me/56972584002?text=Hola%2C%20estoy%20interesado%20en%20los%20servicios%20de%20Azure"
+                target="_blank" rel="noopener noreferrer"
+                className="wa-btn" aria-label="Habla con un ingeniero certificado" title="Habla con un ingeniero certificado">
                 <Icons.WhatsApp />
             </a>
         );
 
+        /* ================================================================
+           APP
+        ================================================================ */
         const App = () => {
+            useScrollReveal();
+
             return (
-                <div className="min-h-screen font-sans text-gray-100 selection:bg-blue-500 selection:text-white">
+                <div className="min-h-screen font-sans text-gray-100 selection:bg-blue-600 selection:text-white">
                     <Navbar />
                     <main>
                         <Hero />
@@ -791,10 +1563,19 @@
                         <ContactForm />
                     </main>
                     <Footer />
-                    <WhatsAppButton />
+                    <WhatsApp />
                 </div>
             );
         };
+
+        /* ================================================================
+           SHIMMER keyframe for progress bar (injected once)
+        ================================================================ */
+        (function injectShimmer() {
+            const s = document.createElement('style');
+            s.textContent = `@keyframes shimmer-bar { 0%{background-position:-200% 0} 100%{background-position:200% 0} }`;
+            document.head.appendChild(s);
+        })();
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
